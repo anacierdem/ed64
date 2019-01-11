@@ -12,6 +12,6 @@ Install globally;
 
 And invoke;
 
-    loader [path to your file]
+    loader64 [path to your file]
 
-Tested to be working with OS v2.12
+Tested to be working with OS v2.12 for images < 32m
