@@ -1,0 +1,16 @@
+{
+  "name": "ed64",
+  "version": "0.0.1",
+  "description": "",
+  "files": [
+    "loader.js"
+  ],
+  "bin": {
+    "loader64": "./loader.js"
+  },
+  "author": "Ali Naci Erdem",
+  "license": "ISC",
+  "dependencies": {
+    "serialport": "^7.1.0"
+  }
+}
