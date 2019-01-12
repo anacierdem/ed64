@@ -102,7 +102,6 @@ async function sendData(port, data) {
     if (offset >= size) {
       console.log('Try boot...');
       await sendCommand(port, prepareCommand(commands.BOOT), false);
-      port.close();
     } else {
       const partial = Buffer.from(data.buffer, offset, STATUS_UPDATE_AT);
 
@@ -112,52 +111,77 @@ async function sendData(port, data) {
       }
 
       await writeToPort(port, partial);
-      writeNext(offset + STATUS_UPDATE_AT)
+      await writeNext(offset + STATUS_UPDATE_AT)
     }
   }
 
   await sendCommand(port, prepareWriteCommand(size), false);
-  writeNext(0);
+  await writeNext(0);
 }
 
-function prepare(port) {
-  fs.readFile(process.argv[2], async function(err, contents) {
-    if (err) {
-      console.log('Error reading file: ', err.message);
+async function prepare(port, contents) {
+  if (contents.byteLength < 2097152) {
+    try {
+      await sendCommand(port, prepareCommand(commands.FILL));
+      console.log('Fill success!');
+      await sendData(port, contents);
+    } catch(e) {
+      console.log('Fill error!');
     }
-    if (contents.byteLength < 2097152) {
+  } else {
+    await sendData(port, contents);
+  }
+}
+
+function startListening(port) {
+  port.on('data', (d) => console.log(bin2String(d)));
+}
+
+function findPortAndUpload(options) {
+  const { fileName, keepAlive } = options;
+  // Enumarate ports and invoke sendData
+  ports.then((ports) => {
+    ports.forEach(async ({ comName }) => {
+      const port = new SerialPort(comName , {
+        baudRate: 9600
+      });
+
+      // Open errors will be emitted as an error event
+      port.on('error', function(err) {
+        console.log('Error: ', err.message)
+      });
+
       try {
-        await sendCommand(port, prepareCommand(commands.FILL));
-        console.log('Fill success!');
-        sendData(port, contents);
+        await sendCommand(port, prepareCommand(commands.TEST));
+        console.log('Found ED64 on', comName);
+
+        fs.readFile(fileName, async function(err, contents) {
+          if (err) {
+            console.log('Error reading file: ', err.message);
+          }
+          await prepare(port, contents);
+          if (keepAlive) {
+            startListening(port);
+          } else {
+            port.close();
+          }
+        });
       } catch(e) {
-        console.log('Fill error!');
+        if (e !== ackError) console.log(e.message);
       }
-    } else {
-      sendData(port, contents);
-    }
+    })
   });
 }
 
-// Enumarate ports and invoke sendData
-ports.then((ports) => {
-  ports.forEach(async ({ comName }) => {
-    const port = new SerialPort(comName , {
-      baudRate: 9600
-    });
+const options = {
+  fileName: process.argv[2],
+  keepAlive: false
+}
 
-    // Open errors will be emitted as an error event
-    port.on('error', function(err) {
-      console.log('Error: ', err.message)
-    });
-
-    try {
-      await sendCommand(port, prepareCommand(commands.TEST));
-      console.log('Found ED64 on', comName);
-      prepare(port);
-    } catch(e) {
-      if (e !== ackError) console.log(e.message);
-    }
-  })
+process.argv.forEach(function (val, index, array) {
+  if (val === '--keep-alive') {
+    options.keepAlive = true;
+  }
 });
 
+findPortAndUpload(options);

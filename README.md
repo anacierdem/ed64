@@ -14,4 +14,8 @@ And invoke;
 
     loader64 [path to your file]
 
+You can continue monitoring serial communication after boot by providing `--keep-alive`.
+
+    loader64 [path to your file] --keep-alive
+
 Tested to be working with OS v2.12 for images
