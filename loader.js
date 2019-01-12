@@ -15,6 +15,8 @@ const TIMEOUT = 1000;
 const STATUS_UPDATE_AT = 32768;
 const MEG_32 = 33554432;
 
+const ackError = new Error('Acknowledge timeout.');
+
 const ports = SerialPort.list();
 
 function bin2String(array) {
@@ -25,22 +27,50 @@ function bin2String(array) {
   return result;
 }
 
-function waitAck(port, cb) {
-  const portTimeout = setTimeout(() => {
-    cb(false);
-    port.close();
-  }, TIMEOUT);
+async function acknowledge(port) {
+  return new Promise((resolve, reject) => {
+    const portTimeout = setTimeout(() => {
+      reject(ackError);
+      port.close();
+    }, TIMEOUT);
 
-  function wait(data) {
-    const response = bin2String(data);
-    if (response.indexOf(ACK) > -1) {
-      clearTimeout(portTimeout);
-      port.removeListener('data', wait);
-      cb(true);
+    function wait(data) {
+      const response = bin2String(data);
+      if (response.indexOf(ACK) > -1) {
+        clearTimeout(portTimeout);
+        port.removeListener('data', wait);
+        resolve(true);
+      }
     }
-  }
 
-  port.on('data', wait)
+    port.on('data', wait);
+  })
+}
+
+async function writeToPort(port, data) {
+  return new Promise((resolve, reject) => {
+    port.write(data, async (err) => {
+      if (err) {
+        reject(err);
+      }
+      resolve(true);
+    });
+  });
+}
+
+async function sendCommand(port, command, waitAck = true) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await writeToPort(port, command);
+      if (waitAck) {
+        resolve(await acknowledge(port));
+      } else {
+        resolve(true);
+      }
+    } catch (e) {
+      reject(e);
+    }
+  });
 }
 
 // Make sure to write 512 bytes of data to fill buffer on ed64
@@ -53,13 +83,6 @@ function prepareCommand(command) {
   return buffer;
 }
 
-function boot(port) {
-  port.write(prepareCommand(commands.BOOT), 'ascii', () => {
-    port.close();
-  });
-  console.log('Try boot...');
-}
-
 function prepareWriteCommand(size, offset = 0) {
   const command = prepareCommand(commands.WRITE);;
   command[4] = offset;
@@ -70,54 +93,46 @@ function prepareWriteCommand(size, offset = 0) {
   return command;
 }
 
-function sendData(port, data) {
+async function sendData(port, data) {
   console.log('Sending...');
   const size = data.byteLength;
 
-  function writeNext(offset) {
+  async function writeNext(offset) {
     console.log('Writing at', `${offset}/${size}`);
     if (offset >= size) {
-      boot(port);
+      console.log('Try boot...');
+      await sendCommand(port, prepareCommand(commands.BOOT), false);
+      port.close();
     } else {
       const partial = Buffer.from(data.buffer, offset, STATUS_UPDATE_AT);
 
       if (offset === MEG_32) {
         console.log('Next 32m');
-        port.write(prepareWriteCommand(size - MEG_32, 64), () => {
-          port.write(partial, () => {
-            writeNext(offset + STATUS_UPDATE_AT)
-          });
-        });
-      } else {
-        port.write(partial, () => {
-          writeNext(offset + STATUS_UPDATE_AT)
-        });
+        await sendCommand(port, prepareWriteCommand(size - MEG_32, 64), false);
       }
+
+      await writeToPort(port, partial);
+      writeNext(offset + STATUS_UPDATE_AT)
     }
   }
 
-  port.write(prepareWriteCommand(size), () => {
-    writeNext(0);
-  });
+  await sendCommand(port, prepareWriteCommand(size), false);
+  writeNext(0);
 }
 
 function prepare(port) {
-  fs.readFile(process.argv[2], function(err, contents) {
+  fs.readFile(process.argv[2], async function(err, contents) {
     if (err) {
       console.log('Error reading file: ', err.message);
     }
-    if(contents.byteLength < 2097152) {
-      port.write(prepareCommand(commands.FILL), () => {
-        waitAck(port, (success) => {
-          if (success) {
-            console.log('Fill success!');
-
-            sendData(port, contents);
-          } else {
-            console.log('Fill error!');
-          }
-        });
-      });
+    if (contents.byteLength < 2097152) {
+      try {
+        await sendCommand(port, prepareCommand(commands.FILL));
+        console.log('Fill success!');
+        sendData(port, contents);
+      } catch(e) {
+        console.log('Fill error!');
+      }
     } else {
       sendData(port, contents);
     }
@@ -126,7 +141,7 @@ function prepare(port) {
 
 // Enumarate ports and invoke sendData
 ports.then((ports) => {
-  ports.forEach(({ comName }) => {
+  ports.forEach(async ({ comName }) => {
     const port = new SerialPort(comName , {
       baudRate: 9600
     });
@@ -136,18 +151,13 @@ ports.then((ports) => {
       console.log('Error: ', err.message)
     });
 
-    waitAck(port, (success) => {
-      if (success) {
-        console.log('Found ED64 on', comName);
-        prepare(port);
-      }
-    });
-
-    port.write(prepareCommand(commands.TEST), function(err) {
-      if (err) {
-        return console.log('Error on write: ', err.message)
-      }
-    });
+    try {
+      await sendCommand(port, prepareCommand(commands.TEST));
+      console.log('Found ED64 on', comName);
+      prepare(port);
+    } catch(e) {
+      if (e !== ackError) console.log(e.message);
+    }
   })
 });
 
