@@ -7,6 +7,7 @@ const commands = {
   TEST: 'CMDT',
   BOOT: 'CMDS',
   WRITE: 'CMDW',
+  READ: 'CMDR',
   FILL: 'CMDF'
 };
 
@@ -93,6 +94,16 @@ function prepareWriteCommand(size, offset = 0) {
   return command;
 }
 
+function prepareReadCommand(size, offset = 0) {
+  const command = prepareCommand(commands.READ);;
+  command[4] = offset;
+  command[5] = 0;
+  command[6] = (size / 512) >> 8;
+  command[7] = (size / 512);
+
+  return command;
+}
+
 async function sendData(port, data) {
   console.log('Sending...');
   const size = data.byteLength;
@@ -138,7 +149,7 @@ function startListening(port) {
 }
 
 function findPortAndUpload(options) {
-  const { fileName, keepAlive } = options;
+  const { fileName, keepAlive, read } = options;
   // Enumarate ports and invoke sendData
   ports.then((ports) => {
     ports.forEach(async ({ comName }) => {
@@ -155,17 +166,22 @@ function findPortAndUpload(options) {
         await sendCommand(port, prepareCommand(commands.TEST));
         console.log('Found ED64 on', comName);
 
-        fs.readFile(fileName, async function(err, contents) {
-          if (err) {
-            console.log('Error reading file: ', err.message);
-          }
-          await prepare(port, contents);
-          if (keepAlive) {
-            startListening(port);
-          } else {
-            port.close();
-          }
-        });
+        if (read) {
+          startListening(port);
+          await sendCommand(port, prepareReadCommand(2097152));
+        } else {
+          fs.readFile(fileName, async function(err, contents) {
+            if (err) {
+              console.log('Error reading file: ', err.message);
+            }
+            await prepare(port, contents);
+            if (keepAlive) {
+              startListening(port);
+            } else {
+              port.close();
+            }
+          });
+        }
       } catch(e) {
         if (e !== ackError) console.log(e.message);
       }
@@ -175,12 +191,18 @@ function findPortAndUpload(options) {
 
 const options = {
   fileName: process.argv[2],
-  keepAlive: false
+  keepAlive: false,
+  read: false
 }
 
 process.argv.forEach(function (val, index, array) {
-  if (val === '--keep-alive') {
-    options.keepAlive = true;
+  switch (val) {
+    case '--keep-alive':
+      options.keepAlive = true;
+    break;
+    case '--read':
+      options.read = true;
+    break;
   }
 });
 

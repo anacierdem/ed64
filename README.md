@@ -29,3 +29,7 @@ You can continue monitoring serial communication after boot by providing `--keep
     loader64 [path to your file] --keep-alive
 
 Tested to be working with OS v2.12
+
+Experimental read mode (will print 2m of data on console);
+
+    loader64 --read
