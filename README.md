@@ -14,4 +14,4 @@ And invoke;
 
     loader64 [path to your file]
 
-Tested to be working with OS v2.12 for images < 32m
+Tested to be working with OS v2.12 for images

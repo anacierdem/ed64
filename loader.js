@@ -13,6 +13,7 @@ const commands = {
 const ACK = 'RSPk';
 const TIMEOUT = 1000;
 const STATUS_UPDATE_AT = 32768;
+const MEG_32 = 33554432;
 
 const ports = SerialPort.list();
 
@@ -59,16 +60,19 @@ function boot(port) {
   console.log('Try boot...');
 }
 
-function sendData(port, data) {
-  const size = data.byteLength;
-
+function prepareWriteCommand(size, offset = 0) {
   const command = prepareCommand(commands.WRITE);;
-  command[4] = 0;
+  command[4] = offset;
   command[5] = 0;
   command[6] = (size / 512) >> 8;
   command[7] = (size / 512);
 
-  console.log('Sending...', bin2String(command));
+  return command;
+}
+
+function sendData(port, data) {
+  console.log('Sending...');
+  const size = data.byteLength;
 
   function writeNext(offset) {
     console.log('Writing at', `${offset}/${size}`);
@@ -76,13 +80,23 @@ function sendData(port, data) {
       boot(port);
     } else {
       const partial = Buffer.from(data.buffer, offset, STATUS_UPDATE_AT);
-      port.write(partial, () => {
-        writeNext(offset + STATUS_UPDATE_AT)
-      });
+
+      if (offset === MEG_32) {
+        console.log('Next 32m');
+        port.write(prepareWriteCommand(size - MEG_32, 64), () => {
+          port.write(partial, () => {
+            writeNext(offset + STATUS_UPDATE_AT)
+          });
+        });
+      } else {
+        port.write(partial, () => {
+          writeNext(offset + STATUS_UPDATE_AT)
+        });
+      }
     }
   }
 
-  port.write(command, () => {
+  port.write(prepareWriteCommand(size), () => {
     writeNext(0);
   });
 }
