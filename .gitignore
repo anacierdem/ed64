@@ -20,9 +20,12 @@ tools/n64tool
 *~
 
 *.v64
+*.z64
 *.elf
 *.bin
 *.o
 *.dfs
 
 node_modules
+
+.vscode/settings.json

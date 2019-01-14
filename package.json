@@ -12,7 +12,8 @@
   "license": "ISC",
   "scripts": {
     "init": "node ./node_modules/libdragon/index.js ed64 start",
-    "build": "node ./node_modules/libdragon/index.js ed64 make -C ./src"
+    "build": "node ./node_modules/libdragon/index.js ed64 make",
+    "clean": "node ./node_modules/libdragon/index.js ed64 make clean"
   },
   "dependencies": {
     "libdragon": "^1.0.2",
