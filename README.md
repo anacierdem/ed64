@@ -33,3 +33,14 @@ Tested to be working with OS v2.12
 Experimental read mode (will print 2m of data on console);
 
     loader64 --read
+
+## ED64 rebootable example
+
+In the ./src folder you can find a N64 program capable of rebooting on loader upload. To be able to use it;
+
+- Make sure you have node.js (>= 7.6) and docker installed on your machine.
+- Install vscode.
+- Connect your Everdrive64 via USB and turn on N64.
+- Open this folder and hit F5.
+- After `libdragon` is installed as a docker container,
+- Voila! You have a re-uploadable executable with print debugging.
