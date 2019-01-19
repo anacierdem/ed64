@@ -14,14 +14,15 @@ LD = $(GCCN64PREFIX)ld
 OBJCOPY = $(GCCN64PREFIX)objcopy
 
 BUILD_PATH = ./build
+SOURCE_PATH = ./src
 PROG_NAME = $(BUILD_PATH)/ed64
 
+N64_FLAGS = -l 2M -h $(HEADERPATH)/$(HEADERNAME) -o $(PROG_NAME)$(ROM_EXTENSION) $(PROG_NAME).bin
 ifeq ($(N64_BYTE_SWAP),true)
 ROM_EXTENSION = .v64
-N64_FLAGS = -b -l 2M -h $(HEADERPATH)/$(HEADERNAME) -o $(PROG_NAME)$(ROM_EXTENSION) $(PROG_NAME).bin
+N64_FLAGS = -b $(N64_FLAGS)
 else
 ROM_EXTENSION = .z64
-N64_FLAGS = -l 2M -h $(HEADERPATH)/$(HEADERNAME) -o $(PROG_NAME)$(ROM_EXTENSION) $(PROG_NAME).bin
 endif
 
 $(PROG_NAME)$(ROM_EXTENSION): $(PROG_NAME).elf
@@ -30,10 +31,18 @@ $(PROG_NAME)$(ROM_EXTENSION): $(PROG_NAME).elf
 	$(N64TOOL) $(N64_FLAGS) -t "ED64"
 	$(CHKSUM64PATH) $(PROG_NAME)$(ROM_EXTENSION)
 
-$(PROG_NAME).elf : ./src/*.c
-	$(CC) -o $(PROG_NAME).elf ./src/*.c $(LINK_FLAGS)
+_OBJ = everdrive.o ed64.o
+OBJ = $(patsubst %,$(BUILD_PATH)/%,$(_OBJ))
+
+$(BUILD_PATH)/%.o: $(SOURCE_PATH)/%.c
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+$(PROG_NAME).elf: $(OBJ)
+	$(LD) -o $@ $^ $(LINK_FLAGS)
 
 all: $(PROG_NAME)$(ROM_EXTENSION)
+
+.PHONY: clean
 
 clean:
 	rm -rf $(BUILD_PATH)/*
