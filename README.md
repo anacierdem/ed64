@@ -46,3 +46,10 @@ In the `./src` folder you can find a N64 program capable of rebooting on loader 
 - `libdragon` toolchain will be installed automatically as a docker container (named ed64) on your computer and will build, link and run the project.
 - Stop and restart the project via vscode.
 - Voila! You have a re-uploadable executable with print debugging.
+
+## Tasklist
+
+- [x] Implement ROM loader on js.
+- [x] Implement a rebootable ROM.
+- [ ] Add a GDB stub for real-time debugging.
+- [ ] Implement a debugger for debugging the RSP.
