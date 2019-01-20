@@ -44,7 +44,7 @@ void everdrive_init() {
     ED_regs->configuration;
     ED_regs->message = 0;
     ED_regs->configuration;
-    ED_regs->key = 0x1234;
+    ED_regs->key = 0x1234; // enable everdrive
     ED_regs->configuration;
     ED_regs->configuration = 1; // SD RAM on
 }
@@ -59,13 +59,12 @@ unsigned char everdrive_dma_busy() {
 
 void everdrive_fifo_read_buffer(void *buff, unsigned short blocks) {
     unsigned long len = blocks * 512;
-    unsigned long ram_buff_addr = DMA_BUFF_ADDR / 2048;
 
     // First write to cart
-    everdrive_dma_write(ram_buff_addr, blocks);
+    everdrive_dma_write(DMA_BUFF_ADDR / 2048, blocks);
 
     // Then read to mem
-    unsigned long pi_address = (0xb0000000 + ram_buff_addr * 2048);
+    unsigned long pi_address = (0xb0000000 + DMA_BUFF_ADDR);
     dma_read(buff, pi_address, len);
     while (dma_busy());
     data_cache_hit_invalidate(buff, len);
@@ -73,10 +72,9 @@ void everdrive_fifo_read_buffer(void *buff, unsigned short blocks) {
 
 void everdrive_fifo_write_buffer(void *buff, unsigned short blocks) {
     unsigned long len = blocks * 512;
-    unsigned long ram_buff_addr = DMA_BUFF_ADDR / 2048;
     data_cache_hit_writeback_invalidate(buff, len);
-    dma_write(buff, (0xb0000000 + ram_buff_addr * 1024 * 2), len);
-    everdrive_dma_read(ram_buff_addr, blocks);
+    dma_write(buff, (0xb0000000 + DMA_BUFF_ADDR), len);
+    everdrive_dma_read(DMA_BUFF_ADDR / 2048, blocks);
 }
 
 void handle_usb() {
