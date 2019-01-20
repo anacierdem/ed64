@@ -102,7 +102,10 @@ void handle_usb() {
             transfer_rom(false);
             break;
         case 'S':
-            disable_interrupts();
+            dma_read((void *) 0x80000400, 0xb0001000, 0x1FFC00); // Fill up to 2 meg point from address in rom
+            while (dma_busy());
+            data_cache_hit_invalidate((void *) 0x80000400, 0x1FFC00);
+            inst_cache_hit_invalidate((void *) 0x80000400, 0x1FFC00);
             _start();
             break;
     }

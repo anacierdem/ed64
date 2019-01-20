@@ -34,7 +34,7 @@ Experimental read mode (will print 2m of data on console);
 
     loader64 --read
 
-## ED64 rebootable example (Not yet working properly)
+## ED64 rebootable example
 
 In the `./src` folder you can find a N64 program capable of rebooting on loader upload. To be able to use it;
 
