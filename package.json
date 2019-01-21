@@ -13,10 +13,11 @@
   "scripts": {
     "init": "node ./node_modules/libdragon/index.js ed64 start",
     "build": "node ./node_modules/libdragon/index.js ed64 make",
-    "clean": "node ./node_modules/libdragon/index.js ed64 make clean"
+    "clean": "node ./node_modules/libdragon/index.js ed64 make clean",
+    "install": "npm run init"
   },
   "dependencies": {
-    "libdragon": "^1.0.2",
+    "libdragon": "^1.0.3",
     "serialport": "^7.1.0"
   }
 }

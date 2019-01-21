@@ -35,6 +35,7 @@ _OBJ = everdrive.o ed64.o
 OBJ = $(patsubst %,$(BUILD_PATH)/%,$(_OBJ))
 
 $(BUILD_PATH)/%.o: $(SOURCE_PATH)/%.c
+	mkdir -p build
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 $(PROG_NAME).elf: $(OBJ)
