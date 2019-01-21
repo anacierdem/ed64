@@ -10,7 +10,8 @@
             "name": "Launch Program",
             "program": "${workspaceFolder}/loader.js",
             "args": ["./build/ed64.z64", "--keep-alive"],
-            "preLaunchTask": "build"
+            "preLaunchTask": "build",
+            "outputCapture": "std"
         }
     ]
 }
