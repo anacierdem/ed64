@@ -2,11 +2,13 @@
 #define __EVERDRIVE_H
 
 #define ROM_LEN  0x4000000 // 64 meg
-
 #define DMA_BUFF_ADDR (ROM_LEN - 0x100000)
 
 #define EVERDRIVE_TO_CART 3
 #define EVERDRIVE_FROM_CART 4
+
+#define EVERDRIVE_STATE_DMA_BUSY 0
+#define EVERDRIVE_STATE_RECEIVE 3
 
 void everdrive_init();
 unsigned char everdrive_dma_busy();

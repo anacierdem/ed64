@@ -6,8 +6,8 @@
 
 #include "everdrive.h"
 
-#define EVERDRIVE_STATE_DMA_BUSY 0
-#define EVERDRIVE_STATE_RECEIVE 3
+#define ROM_OFFSET 0xb0001000
+#define ROM_CODE_LEN 0x1FFC00
 
 static volatile struct ED_regs_s * const ED_regs = (struct ED_regs_s *)0xA8040000;
 
@@ -102,10 +102,10 @@ void handle_usb() {
             transfer_rom(false);
             break;
         case 'S':
-            dma_read((void *) 0x80000400, 0xb0001000, 0x1FFC00); // Fill up to 2 meg point from address in rom
+            dma_read(&_start, ROM_OFFSET, ROM_CODE_LEN); // Fill up to 2 meg point from address in rom
             while (dma_busy());
-            data_cache_hit_invalidate((void *) 0x80000400, 0x1FFC00);
-            inst_cache_hit_invalidate((void *) 0x80000400, 0x1FFC00);
+            data_cache_hit_invalidate(&_start, ROM_CODE_LEN);
+            inst_cache_hit_invalidate(&_start, ROM_CODE_LEN);
             _start();
             break;
     }
