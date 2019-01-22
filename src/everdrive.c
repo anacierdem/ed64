@@ -50,10 +50,12 @@ void everdrive_init() {
 }
 
 unsigned char everdrive_receiving() {
+    ED_regs->configuration;
     return (ED_regs->status >> EVERDRIVE_STATE_RECEIVE) & 1;
 }
 
 unsigned char everdrive_dma_busy() {
+    ED_regs->configuration;
     return (ED_regs->status >> EVERDRIVE_STATE_DMA_BUSY) & 1;
 }
 
@@ -74,6 +76,7 @@ void everdrive_fifo_write_buffer(void *buff, unsigned short blocks) {
     unsigned long len = blocks * 512;
     data_cache_hit_writeback_invalidate(buff, len);
     dma_write(buff, (0xb0000000 + DMA_BUFF_ADDR), len);
+    while (dma_busy());
     everdrive_dma_read(DMA_BUFF_ADDR / 2048, blocks);
 }
 
