@@ -15,8 +15,8 @@ void send_ack();
 void fill_buffer();
 void transfer_rom(bool is_read);
 
-unsigned long long usb_buffer[128];
-char *usb_char_buffer;
+volatile unsigned long long usb_buffer[128];
+volatile unsigned char *usb_char_buffer;
 
 extern void _start();
 
@@ -86,9 +86,9 @@ void handle_usb() {
     if (everdrive_receiving())
         return;
 
-    everdrive_fifo_read_buffer(usb_buffer, 1);
+    everdrive_fifo_read_buffer((void *) usb_buffer, 1);
 
-    if (strncmp("CMD", usb_char_buffer, 3) != 0)
+    if (strncmp("CMD", (void *) usb_char_buffer, 3) != 0)
         return;
 
     switch (usb_char_buffer[3]) {
@@ -115,8 +115,8 @@ void handle_usb() {
 }
 
 void send_ack() {
-    strncpy(usb_char_buffer, "RSPk", 4);
-    everdrive_fifo_write_buffer(usb_buffer, 1);
+    strncpy((void *) usb_char_buffer, "RSPk", 4);
+    everdrive_fifo_write_buffer((void *) usb_buffer, 1);
 }
 
 void fill_buffer() {
