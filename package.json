@@ -17,7 +17,7 @@
     "install": "npm run init"
   },
   "dependencies": {
-    "libdragon": "^1.0.4",
+    "libdragon": "^1.0.5",
     "serialport": "^7.1.0"
   }
 }

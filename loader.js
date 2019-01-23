@@ -13,8 +13,9 @@ const commands = {
 
 const ACK = 'RSPk';
 const TIMEOUT = 1000;
-const STATUS_UPDATE_AT = 32768;
-const MEG_32 = 33554432;
+const MEG = 1024 * 1024;
+const STATUS_UPDATE_AT = MEG;
+const MEG_32 = 32 * MEG;
 
 const ackError = new Error('Acknowledge timeout.');
 
@@ -23,6 +24,10 @@ const ports = SerialPort.list();
 function bin2String(array) {
   var result = "";
   for (var i = 0; i < array.length; i++) {
+    // assume empty c string
+    if (array[i] === 0) {
+      continue;
+    }
     result += String.fromCharCode(array[i]);
   }
   return result;
@@ -109,7 +114,7 @@ async function sendData(port, data) {
   const size = data.byteLength;
 
   async function writeNext(offset) {
-    console.log('Writing at', `${offset}/${size}`);
+    console.log('Writing at', `${offset / MEG}Mb/${size / MEG}Mb`);
     if (offset >= size) {
       console.log('Try boot...');
       await sendCommand(port, prepareCommand(commands.BOOT), false);
@@ -145,7 +150,7 @@ async function prepare(port, contents) {
 }
 
 function startListening(port) {
-  port.on('data', (d) => console.log(bin2String(d)));
+  port.on('data', (d) => process.stdout.write(bin2String(d)));
 }
 
 function findPortAndUpload(options) {

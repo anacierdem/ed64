@@ -3,13 +3,14 @@
 #include <stdio.h>
 #include <n64sys.h>
 #include <string.h>
+#include <system.h>
 
 #include "everdrive.h"
 
 #define ROM_OFFSET 0xb0001000
 #define ROM_CODE_LEN 0x1FFC00
 
-static volatile struct ED_regs_s * const ED_regs = (struct ED_regs_s *)0xA8040000;
+static volatile ED_regs_t * const ED_regs = (ED_regs_t *)0xA8040000;
 
 void send_ack();
 void fill_buffer();
@@ -20,7 +21,22 @@ volatile unsigned char *usb_char_buffer;
 
 extern void _start();
 
-void everdrive_dma_read(unsigned long ram_buff_addr, unsigned short blocks) {
+unsigned char everdrive_receive_buffer_clean() {
+    ED_regs->configuration;
+    return (ED_regs->status >> EVERDRIVE_STATUS_RECEIVE) & 1;
+}
+
+unsigned char everdrive_dma_busy() {
+    ED_regs->configuration;
+    return (ED_regs->status >> EVERDRIVE_STATUS_DMA_BUSY) & 1;
+}
+
+unsigned char everdrive_dma_timeout() {
+    ED_regs->configuration;
+    return (ED_regs->status >> EVERDRIVE_STATUS_DMA_TOUT) & 1;
+}
+
+unsigned char everdrive_dma_read(unsigned long ram_buff_addr, unsigned short blocks) {
     ED_regs->configuration;
     ED_regs->length = (blocks - 1);
     ED_regs->configuration;
@@ -28,9 +44,10 @@ void everdrive_dma_read(unsigned long ram_buff_addr, unsigned short blocks) {
     ED_regs->configuration;
     ED_regs->direction = EVERDRIVE_FROM_CART;
     while (everdrive_dma_busy());
+    return everdrive_dma_timeout();
 }
 
-void everdrive_dma_write(unsigned long ram_buff_addr, unsigned short blocks) {
+unsigned char everdrive_dma_write(unsigned long ram_buff_addr, unsigned short blocks) {
     ED_regs->configuration;
     ED_regs->length = (blocks - 1);
     ED_regs->configuration;
@@ -38,25 +55,7 @@ void everdrive_dma_write(unsigned long ram_buff_addr, unsigned short blocks) {
     ED_regs->configuration;
     ED_regs->direction = EVERDRIVE_TO_CART;
     while (everdrive_dma_busy());
-}
-
-void everdrive_init() {
-    ED_regs->configuration;
-    ED_regs->message = 0;
-    ED_regs->configuration;
-    ED_regs->key = 0x1234; // enable everdrive
-    ED_regs->configuration;
-    ED_regs->configuration = 1; // SD RAM on
-}
-
-unsigned char everdrive_receiving() {
-    ED_regs->configuration;
-    return (ED_regs->status >> EVERDRIVE_STATE_RECEIVE) & 1;
-}
-
-unsigned char everdrive_dma_busy() {
-    ED_regs->configuration;
-    return (ED_regs->status >> EVERDRIVE_STATE_DMA_BUSY) & 1;
+    return everdrive_dma_timeout();
 }
 
 void everdrive_fifo_read_buffer(void *buff, unsigned short blocks) {
@@ -72,19 +71,55 @@ void everdrive_fifo_read_buffer(void *buff, unsigned short blocks) {
     data_cache_hit_invalidate(buff, len);
 }
 
-void everdrive_fifo_write_buffer(void *buff, unsigned short blocks) {
+unsigned char everdrive_fifo_write_buffer(void *buff, unsigned short blocks) {
     unsigned long len = blocks * 512;
     data_cache_hit_writeback_invalidate(buff, len);
     dma_write(buff, (0xb0000000 + DMA_BUFF_ADDR), len);
     while (dma_busy());
-    everdrive_dma_read(DMA_BUFF_ADDR / 2048, blocks);
+    return everdrive_dma_read(DMA_BUFF_ADDR / 2048, blocks);
 }
 
-void handle_usb() {
-    usb_char_buffer = (volatile unsigned char *) usb_buffer;
+static int __console_write(char *buf, unsigned int len)
+{
+    char console_buffer[512];
 
-    if (everdrive_receiving())
+    if (len < 512) {
+        memset(console_buffer,'\0', sizeof(console_buffer));
+    } else {
+        len = 512;
+    }
+
+    strncpy(console_buffer, buf, len);
+    if (everdrive_fifo_write_buffer(console_buffer, 1))
+        return 0;
+    else
+        return len;
+}
+
+static stdio_t console_calls = {
+    0,
+    __console_write,
+    0
+};
+
+void everdrive_init(bool hook_console) {
+    ED_regs->configuration;
+    ED_regs->message = 0;
+    ED_regs->configuration;
+    ED_regs->key = 0x1234; // enable everdrive
+    ED_regs->configuration;
+    ED_regs->configuration = 1; // SD RAM on
+
+    if (hook_console) hook_stdio_calls( &console_calls );
+}
+
+void handle_everdrive() {
+    fflush(stdout);
+
+    if (everdrive_receive_buffer_clean())
         return;
+
+    usb_char_buffer = (volatile unsigned char *) usb_buffer;
 
     everdrive_fifo_read_buffer((void *) usb_buffer, 1);
 

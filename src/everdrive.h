@@ -7,15 +7,13 @@
 #define EVERDRIVE_TO_CART 3
 #define EVERDRIVE_FROM_CART 4
 
-#define EVERDRIVE_STATE_DMA_BUSY 0
-#define EVERDRIVE_STATE_RECEIVE 3
+#define EVERDRIVE_STATUS_DMA_BUSY 0
+#define EVERDRIVE_STATUS_DMA_TOUT 1
+#define EVERDRIVE_STATUS_RECEIVE 3
 
-void everdrive_init();
-unsigned char everdrive_dma_busy();
-void everdrive_fifo_read_buffer(void *buff, unsigned short blocks);
-void everdrive_fifo_write_buffer(void *buff, unsigned short blocks);
+void everdrive_init(bool hook_console);
 
-void handle_usb();
+void handle_everdrive();
 
 typedef struct ED_regs_s {
     uint32_t configuration;
