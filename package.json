@@ -1,6 +1,6 @@
 {
   "name": "ed64",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "description": "",
   "files": [
     "loader.js"
@@ -11,10 +11,10 @@
   "author": "Ali Naci Erdem",
   "license": "ISC",
   "scripts": {
-    "init": "node ./node_modules/libdragon/index.js ed64 start",
-    "build": "node ./node_modules/libdragon/index.js ed64 make",
-    "clean": "node ./node_modules/libdragon/index.js ed64 make clean",
-    "install": "npm run init"
+    "init": "npm explore libdragon -- npm run tc ed64 start",
+    "build": "npm explore libdragon -- npm run tc ed64 make",
+    "clean": "npm explore libdragon -- npm run tc ed64 make clean",
+    "prepare": "npm run init"
   },
   "dependencies": {
     "libdragon": "^1.0.5",

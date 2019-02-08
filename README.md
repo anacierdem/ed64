@@ -22,7 +22,7 @@ Install locally;
 
 And invoke;
 
-    node ./loader.js [path to your file]
+    node ./node_modules/ed64/loader.js [path to your file]
 
 You can continue monitoring serial communication after boot by providing `--keep-alive`.
 
@@ -56,5 +56,6 @@ Changing anything outside of main function is not yet supported. This is still u
 - [x] Implement ROM loader on js.
 - [x] Implement a basic rebootable ROM.
 - [x] Add a hook to newlib's stdout for serial interface.
+- [ ] Implement a fully stable rebootable ROM.
 - [ ] Add a GDB stub for real-time debugging & hot replacement.
 - [ ] Implement a debugger for debugging the RSP.
