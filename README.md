@@ -24,6 +24,10 @@ And invoke;
 
     node ./node_modules/ed64/loader.js [path to your file]
 
+On this repository's root;
+
+    ./loader.js [path to your file]
+
 You can continue monitoring serial communication after boot by providing `--keep-alive`.
 
     loader64 [path to your file] --keep-alive

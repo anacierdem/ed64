@@ -1,6 +1,6 @@
 {
   "name": "ed64",
-  "version": "0.0.4",
+  "version": "0.0.10",
   "description": "",
   "files": [
     "loader.js"
@@ -11,13 +11,13 @@
   "author": "Ali Naci Erdem",
   "license": "ISC",
   "scripts": {
-    "init": "npm explore libdragon -- npm run tc ed64 start",
+    "init": "npm explore libdragon -- npm run tc ed64 download",
     "build": "npm explore libdragon -- npm run tc ed64 make",
     "clean": "npm explore libdragon -- npm run tc ed64 make clean",
     "prepare": "npm run init"
   },
   "dependencies": {
-    "libdragon": "^1.0.5",
+    "libdragon": "^1.0.9",
     "serialport": "^7.1.0"
   }
 }
