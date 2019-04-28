@@ -60,7 +60,7 @@ Changing anything outside of main function is not yet supported. This is still u
 - [x] Implement ROM loader on js.
 - [x] Implement a basic rebootable ROM.
 - [x] Add a hook to newlib's stdout for serial interface.
-- [ ] Implement everdrive as a libdragon dependency.
-- [ ] Implement a fully stable rebootable ROM.
+- [x] Implement everdrive as a libdragon dependency.
+- [x] Implement a fully stable rebootable ROM.
 - [ ] Add a GDB stub for real-time debugging & hot replacement.
 - [ ] Implement a debugger for debugging the RSP.

@@ -8,6 +8,7 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
+            // For a dependent project use; "program": "${workspaceFolder}/node_modules/ed64/loader.js",
             "program": "${workspaceFolder}/loader.js",
             "args": ["./build/ed64.z64", "--keep-alive"],
             "preLaunchTask": "build",

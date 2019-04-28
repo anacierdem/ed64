@@ -40,9 +40,6 @@ $(PROG_NAME).elf: $(PROG_NAME).o
 
 all: $(PROG_NAME)$(ROM_EXTENSION)
 
-install:
-	echo INSTALLED
-
 .PHONY: clean
 
 clean:

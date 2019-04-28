@@ -16,14 +16,14 @@
   "license": "ISC",
   "scripts": {
     "init": "libdragon download",
-    "make": "libdragon make",
+    "build": "libdragon make",
     "install": "libdragon make install",
     "examples": "libdragon make -C test",
     "clean": "libdragon make clean",
     "prepublish": "npm run init"
   },
   "dependencies": {
-    "libdragon": "^1.1.0",
+    "libdragon": "^1.1.3",
     "serialport": "^7.1.0"
   }
 }
