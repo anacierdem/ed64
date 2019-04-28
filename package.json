@@ -14,7 +14,9 @@
   "license": "ISC",
   "scripts": {
     "init": "libdragon download",
-    "build": "libdragon make",
+    "make": "libdragon make",
+    "install": "libdragon make install",
+    "examples": "libdragon make -C test",
     "clean": "libdragon make clean",
     "prepublish": "npm run init"
   },

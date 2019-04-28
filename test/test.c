@@ -4,10 +4,7 @@
 #include <stdint.h>
 
 #include <libdragon.h>
-
-#include "everdrive.h"
-
-extern void _start();
+#include <libed64.h>
 
 int main(void)
 {

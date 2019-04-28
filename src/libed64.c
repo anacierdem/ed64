@@ -5,7 +5,7 @@
 #include <string.h>
 #include <system.h>
 
-#include "everdrive.h"
+#include "libed64.h"
 
 #define ROM_OFFSET 0xb0001000
 #define ROM_CODE_LEN 0x1FFC00

@@ -1,50 +1,34 @@
 ROOTDIR = $(N64_INST)
-GCCN64PREFIX = $(ROOTDIR)/bin/mips64-elf-
-CHKSUM64PATH = $(ROOTDIR)/bin/chksum64
-MKDFSPATH = $(ROOTDIR)/bin/mkdfs
-HEADERPATH = $(ROOTDIR)/mips64-elf/lib
-N64TOOL = $(ROOTDIR)/bin/n64tool
-HEADERNAME = header
-LINK_FLAGS = -G0 -L$(ROOTDIR)/mips64-elf/lib -ldragon -lc -lm -ldragonsys -Tn64ld.x
-CFLAGS = -std=gnu99 -march=vr4300 -mtune=vr4300 -O2 -G0 -Wall -I$(ROOTDIR)/mips64-elf/include
+BUILD_PATH = $(CURDIR)/build
+SOURCE_PATH = $(CURDIR)/src
+INCLUDE_PATH = $(CURDIR)/include
+
+CFLAGS = -std=gnu99 -O2 -G0 -Wall -Werror -mtune=vr4300 -march=vr4300 -I$(INCLUDE_PATH) -I$(ROOTDIR)/mips64-elf/include
 ASFLAGS = -mtune=vr4300 -march=vr4300
-CC = $(GCCN64PREFIX)gcc
-AS = $(GCCN64PREFIX)as
-LD = $(GCCN64PREFIX)ld
-OBJCOPY = $(GCCN64PREFIX)objcopy
+N64PREFIX = $(N64_INST)/bin/mips64-elf-
+INSTALLDIR = $(N64_INST)
+CC = $(N64PREFIX)gcc
+AS = $(N64PREFIX)as
+LD = $(N64PREFIX)ld
+AR = $(N64PREFIX)ar
 
-BUILD_PATH = ./build
-SOURCE_PATH = ./src
-PROG_NAME = $(BUILD_PATH)/ed64
+all: libed64
 
-N64_FLAGS = -l 2M -h $(HEADERPATH)/$(HEADERNAME) -o $(PROG_NAME)$(ROM_EXTENSION) $(PROG_NAME).bin
-ifeq ($(N64_BYTE_SWAP),true)
-ROM_EXTENSION = .v64
-N64_FLAGS = -b $(N64_FLAGS)
-else
-ROM_EXTENSION = .z64
-endif
+libed64: $(BUILD_PATH)/libed64.a
 
-$(PROG_NAME)$(ROM_EXTENSION): $(PROG_NAME).elf
-	$(OBJCOPY) $(PROG_NAME).elf $(PROG_NAME).bin -O binary
-	rm -f $(PROG_NAME)$(ROM_EXTENSION)
-	$(N64TOOL) $(N64_FLAGS) -t "ED64"
-	$(CHKSUM64PATH) $(PROG_NAME)$(ROM_EXTENSION)
+$(BUILD_PATH)/libed64.a: $(BUILD_PATH)/libed64.o
+	$(AR) -rcs -o $(BUILD_PATH)/libed64.a $(BUILD_PATH)/libed64.o
 
-_OBJ = everdrive.o ed64.o
-OBJ = $(patsubst %,$(BUILD_PATH)/%,$(_OBJ))
-
-$(BUILD_PATH)/%.o: $(SOURCE_PATH)/%.c
-	mkdir -p build
-	$(CC) -c -o $@ $< $(CFLAGS)
-
-$(PROG_NAME).elf: $(OBJ)
-	$(LD) -o $@ $^ $(LINK_FLAGS)
-
-all: $(PROG_NAME)$(ROM_EXTENSION)
+$(BUILD_PATH)/libed64.o: $(SOURCE_PATH)/libed64.c
+	mkdir -p $(BUILD_PATH)
+	$(CC) $(CFLAGS) -c -o $(BUILD_PATH)/libed64.o $(SOURCE_PATH)/libed64.c
 
 install:
-	echo INSTALLED
+	install -m 0644 $(BUILD_PATH)/libed64.a $(INSTALLDIR)/mips64-elf/lib/libed64.a
+	install -m 0644 $(INCLUDE_PATH)/libed64.h $(INSTALLDIR)/mips64-elf/include/libed64.h
+
+test:
+	make -C test
 
 .PHONY: clean
 
