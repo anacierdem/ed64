@@ -137,6 +137,7 @@ void handle_everdrive() {
             transfer_rom(true);
             break;
         case 'W':
+            disable_interrupts();
             transfer_rom(false);
             break;
         case 'S':
