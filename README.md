@@ -57,9 +57,17 @@ Changing library code and rebooting is not supported as it will result in a unde
 
 ### Making a project rebootable
 
-Create a new NPM project and install `libdragon` and `ed64`;
+Create a new NPM project;
 
     npm init
+
+Add following to your NPM scripts;
+
+    "init": "libdragon install",
+    "prepublish": "npm run init"
+
+install `libdragon` and `ed64`;
+
     npm i libdragon ed64 --save
 
 Now you are ready to link your project against libed64.
