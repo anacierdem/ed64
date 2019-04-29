@@ -53,7 +53,18 @@ In the `./src` folder you can find a N64 program capable of rebooting on loader 
 
 When calling `everdrive_init(true)`, the first parameter determines whether to hook to stdio or not. If you pass `true`, all standard outputs will go serial over USB.
 
-Changing anything outside of main function is not yet supported. This is still useful for basic consecutive testing.
+Changing library code and rebooting is not supported as it will result in a undefined memory state. This is still useful for consecutive testing of game code.
+
+### Making a project rebootable
+
+Create a new NPM project and install `libdragon` and `ed64`;
+
+    npm init
+    npm i libdragon ed64 --save
+
+Now you are ready to link your project against libed64.
+
+Check out https://github.com/anacierdem/ed64-example for a full example.
 
 ## Tasklist
 
@@ -61,6 +72,5 @@ Changing anything outside of main function is not yet supported. This is still u
 - [x] Implement a basic rebootable ROM.
 - [x] Add a hook to newlib's stdout for serial interface.
 - [x] Implement everdrive as a libdragon dependency.
-- [x] Implement a fully stable rebootable ROM.
 - [ ] Add a GDB stub for real-time debugging & hot replacement.
 - [ ] Implement a debugger for debugging the RSP.
