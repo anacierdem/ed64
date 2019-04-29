@@ -82,3 +82,9 @@ Check out https://github.com/anacierdem/ed64-example for a full example.
 - [x] Implement everdrive as a libdragon dependency.
 - [ ] Add a GDB stub for real-time debugging & hot replacement.
 - [ ] Implement a debugger for debugging the RSP.
+
+## Support
+
+If this helped you, consider supporting me;
+
+<a href="https://patreon.com/anacierdem"><img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fshieldsio-patreon.herokuapp.com%2Fanacierdem&style=for-the-badge" /> </a>
