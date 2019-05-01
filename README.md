@@ -66,9 +66,9 @@ Add following to your NPM scripts;
     "init": "libdragon install",
     "prepublish": "npm run init"
 
-install `libdragon` and `ed64`;
+install `ed64`;
 
-    npm i libdragon ed64 --save
+    npm i ed64 --save
 
 Now you are ready to link your project against libed64.
 
