@@ -9,7 +9,7 @@
             "script": "buildLib",
             "problemMatcher": {
                 "owner": "c",
-                "fileLocation": ["relative", "${workspaceFolder}"],
+                "fileLocation": ["relative", "${workspaceFolder}/.."],
                 "pattern": {
                     "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
                     "file": 1,
@@ -34,7 +34,7 @@
             "script": "buildTest",
             "problemMatcher": {
                 "owner": "c",
-                "fileLocation": ["relative", "${workspaceFolder}"],
+                "fileLocation": ["relative", "${workspaceFolder}/.."],
                 "pattern": {
                     "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
                     "file": 1,
@@ -55,6 +55,11 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "clean",
+            "type": "npm",
+            "script": "clean"
         }
     ]
 }

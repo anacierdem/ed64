@@ -12,7 +12,8 @@
             "program": "${workspaceFolder}/loader.js",
             "args": ["./build/test.z64", "--keep-alive"],
             "preLaunchTask": "build",
-            "outputCapture": "std"
+            "outputCapture": "std",
+            "internalConsoleOptions": "openOnSessionStart"
         }
     ]
 }
