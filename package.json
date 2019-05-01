@@ -1,6 +1,6 @@
 {
   "name": "ed64",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "",
   "files": [
     "loader.js",
@@ -16,8 +16,9 @@
   "license": "ISC",
   "scripts": {
     "init": "libdragon download",
-    "build": "libdragon make",
-    "examples": "libdragon make -C test",
+    "buildLib": "libdragon make",
+    "installLib": "libdragon make install",
+    "buildTest": "libdragon make -C test",
     "clean": "libdragon make clean",
     "prepublish": "npm run init"
   },

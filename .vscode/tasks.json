@@ -4,13 +4,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build",
+            "label": "buildLib",
             "type": "npm",
-            "script": "build",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
+            "script": "buildLib",
             "problemMatcher": {
                 "owner": "c",
                 "fileLocation": ["relative", "${workspaceFolder}"],
@@ -22,6 +18,42 @@
                     "severity": 4,
                     "message": 5
                 }
+            }
+        },
+        {
+            "label": "installLib",
+            "type": "npm",
+            "script": "installLib",
+            "dependsOn": [
+                "buildLib"
+            ]
+        },
+        {
+            "label": "buildTest",
+            "type": "npm",
+            "script": "buildTest",
+            "problemMatcher": {
+                "owner": "c",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                }
+            }
+        },
+        {
+            "label": "build",
+            "dependsOn": [
+                "installLib",
+                "buildTest"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
             }
         }
     ]
