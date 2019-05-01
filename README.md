@@ -53,7 +53,7 @@ In the `./src` folder you can find a N64 program capable of rebooting on loader 
 
 When calling `everdrive_init(true)`, the first parameter determines whether to hook to stdio or not. If you pass `true`, all standard outputs will go serial over USB.
 
-Changing library code and rebooting is not supported as it will result in a undefined memory state. This is still useful for consecutive testing of game code.
+Changing anything outside of main function and rebooting is not supported as it will result in a undefined memory state. This is still useful for consecutive testing of game code.
 
 ### Making a project rebootable
 
