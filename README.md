@@ -53,7 +53,10 @@ In the `./src` folder you can find a N64 program capable of rebooting on loader 
 
 When calling `everdrive_init(true)`, the first parameter determines whether to hook to stdio or not. If you pass `true`, all standard outputs will go serial over USB.
 
-Changing anything outside of main function and rebooting is not supported as it will result in a undefined memory state. This is still useful for consecutive testing of game code.
+If you need change anything outside of main function, move your function after the library code. You can do this using a section `.text.*` and these will be mapped after any library code and will not shift anything until `_start` is called. For example for a vblank handler;
+
+    void vblCallback(void) __attribute__((section(".text.after")));
+    void vblCallback(void) {}
 
 ### Making a project rebootable
 
