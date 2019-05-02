@@ -47,9 +47,10 @@
         },
         {
             "label": "build",
+            "type": "npm",
+            "script": "buildTest",
             "dependsOn": [
-                "installLib",
-                "buildTest"
+                "installLib"
             ],
             "group": {
                 "kind": "build",
