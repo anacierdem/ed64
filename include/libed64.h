@@ -11,6 +11,10 @@
 #define EVERDRIVE_STATUS_DMA_TOUT 1
 #define EVERDRIVE_STATUS_RECEIVE 3
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void everdrive_init(bool hook_console);
 
 void handle_everdrive();
@@ -26,6 +30,10 @@ typedef struct ED_regs_s {
     uint32_t unused2;
     uint32_t key;
 } ED_regs_t;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 
