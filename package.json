@@ -1,6 +1,6 @@
 {
   "name": "ed64",
-  "version": "0.1.10",
+  "version": "0.1.12",
   "description": "",
   "files": [
     "loader.js",
@@ -20,10 +20,10 @@
     "installLib": "libdragon make install",
     "buildTest": "libdragon make -C test",
     "clean": "libdragon make clean",
-    "prepublish": "npm run init"
+    "prepare": "npm run init"
   },
   "dependencies": {
-    "libdragon": "^1.2.2",
+    "libdragon": "^1.2.4",
     "serialport": "^7.1.0"
   }
 }
