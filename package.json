@@ -1,6 +1,6 @@
 {
   "name": "ed64",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "",
   "files": [
     "loader.js",
@@ -23,7 +23,7 @@
     "prepare": "npm run init"
   },
   "dependencies": {
-    "libdragon": "^1.2.4",
+    "libdragon": "^1.2.5",
     "serialport": "^7.1.0"
   }
 }
