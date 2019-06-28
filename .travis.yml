@@ -6,6 +6,9 @@ services:
 node_js:
   - "node"
 
+node_js:
+  - "10"
+
 sudo: false
 
 os:
