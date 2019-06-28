@@ -20,7 +20,6 @@ install:
   - npm install
 
 script:
-  - npm run init
   - npm run buildLib
   - npm run installLib
   - npm run buildTest
