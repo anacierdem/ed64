@@ -1,8 +1,5 @@
 language: node_js
 
-node_js:
-  - "8"
-
 services:
   - docker
 
@@ -13,6 +10,8 @@ sudo: false
 
 os:
   - linux
+
+dist: xenial
 
 install:
   - npm install
