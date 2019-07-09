@@ -89,7 +89,7 @@ static int __console_write(char *buf, unsigned int len)
         len = 512;
     }
 
-    strncpy(console_buffer, buf, len);
+    memcpy(console_buffer, buf, len);
     if (everdrive_fifo_write_buffer(console_buffer, 1))
         return 0;
     else
@@ -151,7 +151,7 @@ void handle_everdrive() {
 }
 
 void send_ack() {
-    strncpy((void *) usb_char_buffer, "RSPk", 4);
+    memcpy((void *) usb_char_buffer, "RSPk", 4);
     everdrive_fifo_write_buffer((void *) usb_buffer, 1);
 }
 
