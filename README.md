@@ -77,6 +77,8 @@ Now you are ready to link your project against libed64.
 
 Check out https://github.com/anacierdem/ed64-example for a full example.
 
+To update libdragon, set the version you need in package.json and run `npm i`.
+
 ## Tasklist
 
 - [x] Implement ROM loader on js.
