@@ -67,7 +67,7 @@ Create a new NPM project;
 Add following to your NPM scripts;
 
     "init": "libdragon install",
-    "prepublish": "npm run init"
+    "prepare": "npm run init"
 
 install `ed64`;
 
