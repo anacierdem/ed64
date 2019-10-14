@@ -1,4 +1,6 @@
 # ED64 Tools
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fanacierdem%2Fed64.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fanacierdem%2Fed64?ref=badge_shield)
+
 
 This repository contains essential tools to be used with everdrive64.
 
@@ -93,3 +95,7 @@ To update libdragon, set the version you need in package.json and run `npm i`.
 If this helped you, consider supporting me;
 
 <a href="https://patreon.com/anacierdem"><img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fshieldsio-patreon.herokuapp.com%2Fanacierdem&style=for-the-badge" /> </a>
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fanacierdem%2Fed64.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fanacierdem%2Fed64?ref=badge_large)
