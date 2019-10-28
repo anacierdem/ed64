@@ -2,6 +2,7 @@
 
 const SerialPort = require('serialport')
 var fs = require('fs');
+var net = require('net');
 
 const commands = {
   TEST: 'CMDT',
@@ -21,17 +22,38 @@ const ackError = new Error('Acknowledge timeout.');
 
 const ports = SerialPort.list();
 
-function bin2String(array) {
-  var result = "";
+function cleanBinary(array) {
+  var result = [];
   for (var i = 0; i < array.length; i++) {
     // assume empty c string
     if (array[i] === 0) {
       continue;
     }
-    result += String.fromCharCode(array[i]);
+    result.push(array[i]);
+  }
+  return Buffer.from(result);
+}
+
+function bin2String(array) {
+  var intermediate = cleanBinary(array);
+  for (var i = 0; i < intermediate.length; i++) {
+    result += String.fromCharCode(intermediate[i]);
   }
   return result;
 }
+
+function cleanBinary(array) {
+  var result = [];
+  for (var i = 0; i < array.length; i++) {
+    // assume empty c string
+    if (array[i] === 0) {
+      continue;
+    }
+    result.push(array[i]);
+  }
+  return Buffer.from(result);
+}
+
 
 async function acknowledge(port) {
   return new Promise((resolve, reject) => {
@@ -116,7 +138,7 @@ async function sendData(port, data) {
   async function writeNext(offset) {
     console.log('Writing at', `${offset / MEG}Mb/${size / MEG}Mb`);
     if (offset >= size) {
-      console.log('Try boot...');
+      console.log('Booting...');
       await sendCommand(port, prepareCommand(commands.BOOT), false);
     } else {
       const partial = Buffer.from(data.buffer, offset, STATUS_UPDATE_AT);
@@ -142,15 +164,26 @@ async function prepare(port, contents) {
       console.log('Fill success!');
       await sendData(port, contents);
     } catch(e) {
-      console.log('Fill error!');
+      console.error('Fill error!');
     }
   } else {
     await sendData(port, contents);
   }
 }
 
-function startListening(port) {
-  port.on('data', (d) => process.stdout.write(bin2String(d)));
+function startListening(port, socketPort) {
+  var server = net.createServer(function(socket) {
+    port.on('data', (d) => {
+      console.log('N64:', bin2String(d));
+      socket.write(cleanBinary(d));
+    });
+    socket.on('data', (d) => {
+      console.log('Remote:', bin2String(d));
+      port.write(d)
+    });
+  });
+
+  server.listen(socketPort, '127.0.0.1');
 }
 
 function findPortAndUpload(options) {
@@ -172,7 +205,7 @@ function findPortAndUpload(options) {
         console.log('Found ED64 on', comName);
 
         if (read) {
-          startListening(port);
+          startListening(port, options.port);
           await sendCommand(port, prepareReadCommand(2097152));
         } else {
           fs.readFile(fileName, async function(err, contents) {
@@ -181,7 +214,7 @@ function findPortAndUpload(options) {
             }
             await prepare(port, contents);
             if (keepAlive) {
-              startListening(port);
+              startListening(port, options.port);
             } else {
               port.close();
             }
@@ -197,10 +230,14 @@ function findPortAndUpload(options) {
 const options = {
   fileName: process.argv[2],
   keepAlive: false,
-  read: false
+  read: false,
+  port: 1337
 }
 
 process.argv.forEach(function (val, index, array) {
+  if (val.indexOf('--server-port=') === 0) {
+    options.port = parseInt(val.replace('--server-port=', ''));
+  }
   switch (val) {
     case '--keep-alive':
       options.keepAlive = true;

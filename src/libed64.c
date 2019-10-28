@@ -67,7 +67,6 @@ void everdrive_fifo_read_buffer(void *buff, unsigned short blocks) {
     // Then read to mem
     unsigned long pi_address = (0xb0000000 + DMA_BUFF_ADDR);
     dma_read(buff, pi_address, len);
-    while (dma_busy());
     data_cache_hit_invalidate(buff, len);
 }
 
@@ -75,7 +74,6 @@ unsigned char everdrive_fifo_write_buffer(void *buff, unsigned short blocks) {
     unsigned long len = blocks * 512;
     data_cache_hit_writeback_invalidate(buff, len);
     dma_write(buff, (0xb0000000 + DMA_BUFF_ADDR), len);
-    while (dma_busy());
     return everdrive_dma_read(DMA_BUFF_ADDR / 2048, blocks);
 }
 

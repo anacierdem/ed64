@@ -32,11 +32,9 @@ You can continue monitoring serial communication after boot by providing `--keep
 
     loader64 [path to your file] --keep-alive
 
+This will print the communication on the console as well as starting a socket connection on the port given by `--server-port=1338`. If port is not given it defaults to 1337. This is the point of communication with say GDB.
+
 Tested to be working with OS v2.12
-
-Experimental read mode (will print 2m of data on console);
-
-    loader64 --read
 
 ## ED64 rebootable example
 
