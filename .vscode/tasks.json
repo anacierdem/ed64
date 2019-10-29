@@ -29,23 +29,6 @@
             ]
         },
         {
-            "label": "buildTest",
-            "type": "npm",
-            "script": "buildTest",
-            "problemMatcher": {
-                "owner": "c",
-                "fileLocation": ["relative", "${workspaceFolder}/.."],
-                "pattern": {
-                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
-                    "file": 1,
-                    "line": 2,
-                    "column": 3,
-                    "severity": 4,
-                    "message": 5
-                }
-            }
-        },
-        {
             "label": "build",
             "type": "npm",
             "script": "buildTest",
