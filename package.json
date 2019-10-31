@@ -1,6 +1,6 @@
 {
   "name": "ed64",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "",
   "files": [
     "loader.js",
@@ -15,15 +15,14 @@
   "author": "Ali Naci Erdem",
   "license": "ISC",
   "scripts": {
-    "init": "libdragon download",
     "buildLib": "libdragon make",
     "installLib": "libdragon make install",
     "buildTest": "libdragon make -C test",
     "clean": "libdragon make clean",
-    "prepare": "npm run init"
+    "prepare": "libdragon install"
   },
   "dependencies": {
-    "libdragon": "^1.3.12",
+    "libdragon": "^1.3.14",
     "serialport": "^7.1.0"
   }
 }
