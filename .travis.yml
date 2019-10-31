@@ -17,7 +17,7 @@ os:
 dist: xenial
 
 install:
-  - npm install
+  - npm ci
 
 script:
   - npm run buildLib
