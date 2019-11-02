@@ -84,6 +84,7 @@ To update libdragon, set the version you need in package.json and run `npm i`.
 - [x] Add a hook to newlib's stdout for serial interface.
 - [x] Implement everdrive as a libdragon dependency.
 - [ ] Add a GDB stub for real-time debugging & hot replacement.
+- [ ] Implement direct SD card access via `libdragon` filesystem API.
 - [ ] Implement a debugger for debugging the RSP.
 
 ## Support
