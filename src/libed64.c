@@ -7,8 +7,8 @@
 
 #include "libed64.h"
 
-#define ROM_OFFSET 0xb0001000
-#define ROM_CODE_LEN 0x1FFC00
+#define ROM_OFFSET 0xb0001000 // 0x1000 is the header size
+#define ROM_CODE_LEN 0x200000 - ROM_OFFSET // Assuming a 2M ROM size
 
 static volatile ED_regs_t * const ED_regs = (ED_regs_t *)0xA8040000;
 
@@ -37,23 +37,27 @@ unsigned char everdrive_dma_timeout() {
 }
 
 unsigned char everdrive_dma_read(unsigned long ram_buff_addr, unsigned short blocks) {
-    ED_regs->configuration;
+    while (everdrive_dma_busy());
+    MEMORY_BARRIER();
     ED_regs->length = (blocks - 1);
-    ED_regs->configuration;
+    MEMORY_BARRIER();
     ED_regs->ram_address = ram_buff_addr;
-    ED_regs->configuration;
-    ED_regs->direction = EVERDRIVE_FROM_CART;
+    MEMORY_BARRIER();
+    ED_regs->direction = EVERDRIVE_FROM_CART; // cart to USB buffer
+    MEMORY_BARRIER();
     while (everdrive_dma_busy());
     return everdrive_dma_timeout();
 }
 
 unsigned char everdrive_dma_write(unsigned long ram_buff_addr, unsigned short blocks) {
-    ED_regs->configuration;
+    while (everdrive_dma_busy());
+    MEMORY_BARRIER();
     ED_regs->length = (blocks - 1);
-    ED_regs->configuration;
+    MEMORY_BARRIER();
     ED_regs->ram_address = ram_buff_addr;
-    ED_regs->configuration;
-    ED_regs->direction = EVERDRIVE_TO_CART;
+    MEMORY_BARRIER();
+    ED_regs->direction = EVERDRIVE_TO_CART; // from USB buffer to cart
+    MEMORY_BARRIER();
     while (everdrive_dma_busy());
     return everdrive_dma_timeout();
 }
@@ -64,7 +68,7 @@ void everdrive_fifo_read_buffer(void *buff, unsigned short blocks) {
     // First write to cart
     everdrive_dma_write(DMA_BUFF_ADDR / 2048, blocks);
 
-    // Then read to mem
+    // Then read from cart into mem
     unsigned long pi_address = (0xb0000000 + DMA_BUFF_ADDR);
     dma_read(buff, pi_address, len);
     data_cache_hit_invalidate(buff, len);
@@ -73,8 +77,8 @@ void everdrive_fifo_read_buffer(void *buff, unsigned short blocks) {
 unsigned char everdrive_fifo_write_buffer(void *buff, unsigned short blocks) {
     unsigned long len = blocks * 512;
     data_cache_hit_writeback_invalidate(buff, len);
-    dma_write(buff, (0xb0000000 + DMA_BUFF_ADDR), len);
-    return everdrive_dma_read(DMA_BUFF_ADDR / 2048, blocks);
+    dma_write(buff, (0xb0000000 + DMA_BUFF_ADDR), len); // write to cartridge
+    return everdrive_dma_read(DMA_BUFF_ADDR / 2048, blocks); // cart to USB buffer
 }
 
 static int __console_write(char *buf, unsigned int len)
@@ -101,12 +105,13 @@ static stdio_t console_calls = {
 };
 
 void everdrive_init(bool hook_console) {
-    ED_regs->configuration;
+    MEMORY_BARRIER();
     ED_regs->message = 0;
-    ED_regs->configuration;
+    MEMORY_BARRIER();
     ED_regs->key = 0x1234; // enable everdrive
-    ED_regs->configuration;
+    MEMORY_BARRIER();
     ED_regs->configuration = 1; // SD RAM on
+    MEMORY_BARRIER();
 
     if (hook_console) hook_stdio_calls( &console_calls );
 }
@@ -139,8 +144,7 @@ void handle_everdrive() {
             transfer_rom(false);
             break;
         case 'S':
-            dma_read(&_start, ROM_OFFSET, ROM_CODE_LEN); // Fill up to 2 meg point from address in rom
-            while (dma_busy());
+            dma_read(&_start, ROM_OFFSET, ROM_CODE_LEN); // Fill ROM_CODE_LEN from rom
             data_cache_hit_invalidate(&_start, ROM_CODE_LEN);
             inst_cache_hit_invalidate(&_start, ROM_CODE_LEN);
             _start();

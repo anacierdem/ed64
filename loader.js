@@ -175,13 +175,16 @@ async function prepare(port, contents) {
 function startListening(port, socketPort) {
   var server = net.createServer(function(socket) {
     port.on('data', (d) => {
-      console.log('N64:', bin2String(d));
       socket.write(cleanBinary(d));
     });
     socket.on('data', (d) => {
       console.log('Remote:', bin2String(d));
       port.write(d)
     });
+  });
+
+  port.on('data', (d) => {
+    process.stdout.write(cleanBinary(d));
   });
 
   server.listen(socketPort, '127.0.0.1');
