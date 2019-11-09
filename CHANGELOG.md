@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.2.3] - 2019-09-11
+### Changed
+
+- Fix a bug causing inability to upload image.
+
 ## [0.2.2] - 2019-01-11
 ### Changed
 

@@ -36,6 +36,7 @@ function cleanBinary(array) {
 
 function bin2String(array) {
   var intermediate = cleanBinary(array);
+  var result = '';
   for (var i = 0; i < intermediate.length; i++) {
     result += String.fromCharCode(intermediate[i]);
   }
