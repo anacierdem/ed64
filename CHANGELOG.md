@@ -1,5 +1,10 @@
 # Change Log
 
+## [1.0.1] - 2019-01-12
+### Changed
+
+- Updated libdragon to 2.0.2
+
 ## [0.2.4] - 2019-09-11
 ### Changed
 
