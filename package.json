@@ -22,7 +22,7 @@
     "prepare": "libdragon install"
   },
   "dependencies": {
-    "libdragon": "^2.0.2",
+    "libdragon": "^2.0.3",
     "serialport": "^7.1.0"
   }
 }
