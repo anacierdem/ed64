@@ -1,49 +1,29 @@
 {
-    // See https://go.microsoft.com/fwlink/?LinkId=733558
-    // for the documentation about the tasks.json format
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "buildLib",
-            "type": "npm",
-            "script": "buildLib",
-            "problemMatcher": {
-                "owner": "c",
-                "fileLocation": ["relative", "${workspaceFolder}/.."],
-                "pattern": {
-                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
-                    "file": 1,
-                    "line": 2,
-                    "column": 3,
-                    "severity": 4,
-                    "message": 5
-                }
-            }
-        },
-        {
-            "label": "installLib",
-            "type": "npm",
-            "script": "installLib",
-            "dependsOn": [
-                "buildLib"
-            ]
-        },
-        {
-            "label": "build",
-            "type": "npm",
-            "script": "buildTest",
-            "dependsOn": [
-                "installLib"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        },
-        {
-            "label": "clean",
-            "type": "npm",
-            "script": "clean"
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "type": "npm",
+      "script": "build",
+      "problemMatcher": {
+        "owner": "c",
+        "fileLocation": ["relative", "${workspaceFolder}/.."],
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
         }
-    ]
+      }
+    },
+    {
+      "label": "clean",
+      "type": "npm",
+      "script": "clean"
+    }
+  ]
 }
