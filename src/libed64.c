@@ -7,7 +7,7 @@
 
 #include "libed64.h"
 
-#define ROM_OFFSET 0xb0001000 // 0x1000 is the header size
+#define ROM_OFFSET 0x1000 // 0x1000 is the header size
 #define ROM_CODE_LEN 0x200000 - ROM_OFFSET // Assuming a 2M ROM size
 
 static volatile ED_regs_t * const ED_regs = (ED_regs_t *)0xA8040000;
@@ -37,24 +37,34 @@ unsigned char everdrive_dma_timeout() {
 }
 
 unsigned char everdrive_dma_read(unsigned long ram_buff_addr, unsigned short blocks) {
-    while (everdrive_dma_busy());
+    MEMORY_BARRIER();
+    ED_regs->configuration;
     MEMORY_BARRIER();
     ED_regs->length = (blocks - 1);
     MEMORY_BARRIER();
+    ED_regs->configuration;
+    MEMORY_BARRIER();
     ED_regs->ram_address = ram_buff_addr;
     MEMORY_BARRIER();
-    ED_regs->direction = EVERDRIVE_FROM_CART; // cart to USB buffer
+    ED_regs->configuration;
+    MEMORY_BARRIER();
+    ED_regs->direction = EVERDRIVE_FROM_CART; // cart t
     MEMORY_BARRIER();
     while (everdrive_dma_busy());
     return everdrive_dma_timeout();
 }
 
 unsigned char everdrive_dma_write(unsigned long ram_buff_addr, unsigned short blocks) {
-    while (everdrive_dma_busy());
+    MEMORY_BARRIER();
+    ED_regs->configuration;
     MEMORY_BARRIER();
     ED_regs->length = (blocks - 1);
     MEMORY_BARRIER();
+    ED_regs->configuration;
+    MEMORY_BARRIER();
     ED_regs->ram_address = ram_buff_addr;
+    MEMORY_BARRIER();
+    ED_regs->configuration;
     MEMORY_BARRIER();
     ED_regs->direction = EVERDRIVE_TO_CART; // from USB buffer to cart
     MEMORY_BARRIER();
@@ -106,9 +116,15 @@ static stdio_t console_calls = {
 
 void everdrive_init(bool hook_console) {
     MEMORY_BARRIER();
+    ED_regs->configuration;
+    MEMORY_BARRIER();
     ED_regs->message = 0;
     MEMORY_BARRIER();
+    ED_regs->configuration;
+    MEMORY_BARRIER();
     ED_regs->key = 0x1234; // enable everdrive
+    MEMORY_BARRIER();
+    ED_regs->configuration;
     MEMORY_BARRIER();
     ED_regs->configuration = 1; // SD RAM on
     MEMORY_BARRIER();

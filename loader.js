@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const SerialPort = require('serialport')
+const SerialPort = require('serialport');
 var fs = require('fs');
 var net = require('net');
 
@@ -55,7 +55,6 @@ function cleanBinary(array) {
   return Buffer.from(result);
 }
 
-
 async function acknowledge(port) {
   return new Promise((resolve, reject) => {
     const portTimeout = setTimeout(() => {
@@ -73,12 +72,12 @@ async function acknowledge(port) {
     }
 
     port.on('data', wait);
-  })
+  });
 }
 
 async function writeToPort(port, data) {
   return new Promise((resolve, reject) => {
-    port.write(data, async (err) => {
+    port.write(data, async err => {
       if (err) {
         reject(err);
       }
@@ -113,21 +112,21 @@ function prepareCommand(command) {
 }
 
 function prepareWriteCommand(size, offset = 0) {
-  const command = prepareCommand(commands.WRITE);;
+  const command = prepareCommand(commands.WRITE);
   command[4] = offset;
   command[5] = 0;
   command[6] = (size / 512) >> 8;
-  command[7] = (size / 512);
+  command[7] = size / 512;
 
   return command;
 }
 
 function prepareReadCommand(size, offset = 0) {
-  const command = prepareCommand(commands.READ);;
+  const command = prepareCommand(commands.READ);
   command[4] = offset;
   command[5] = 0;
   command[6] = (size / 512) >> 8;
-  command[7] = (size / 512);
+  command[7] = size / 512;
 
   return command;
 }
@@ -150,7 +149,7 @@ async function sendData(port, data) {
       }
 
       await writeToPort(port, partial);
-      await writeNext(offset + STATUS_UPDATE_AT)
+      await writeNext(offset + STATUS_UPDATE_AT);
     }
   }
 
@@ -164,7 +163,7 @@ async function prepare(port, contents) {
       await sendCommand(port, prepareCommand(commands.FILL));
       console.log('Fill success!');
       await sendData(port, contents);
-    } catch(e) {
+    } catch (e) {
       console.error('Fill error!');
     }
   } else {
@@ -174,16 +173,17 @@ async function prepare(port, contents) {
 
 function startListening(port, socketPort) {
   var server = net.createServer(function(socket) {
-    port.on('data', (d) => {
+    port.on('data', d => {
+      console.log('N64:', bin2String(d));
       socket.write(cleanBinary(d));
     });
-    socket.on('data', (d) => {
+    socket.on('data', d => {
       console.log('Remote:', bin2String(d));
-      port.write(d)
+      port.write(d);
     });
   });
 
-  port.on('data', (d) => {
+  port.on('data', d => {
     process.stdout.write(cleanBinary(d));
   });
 
@@ -193,20 +193,20 @@ function startListening(port, socketPort) {
 function findPortAndUpload(options) {
   const { fileName, keepAlive, read } = options;
   // Enumarate ports and invoke sendData
-  ports.then((ports) => {
-    ports.forEach(async ({ comName }) => {
-      const port = new SerialPort(comName , {
+  ports.then(ports => {
+    ports.forEach(async ({ path }) => {
+      const port = new SerialPort(path, {
         baudRate: 9600
       });
 
       // Open errors will be emitted as an error event
       port.on('error', function(err) {
-        console.log('Error: ', err.message)
+        console.log('Error: ', err.message);
       });
 
       try {
         await sendCommand(port, prepareCommand(commands.TEST));
-        console.log('Found ED64 on', comName);
+        console.log('Found ED64 on', path);
 
         if (read) {
           startListening(port, options.port);
@@ -224,10 +224,10 @@ function findPortAndUpload(options) {
             }
           });
         }
-      } catch(e) {
+      } catch (e) {
         if (e !== ackError) console.log(e.message);
       }
-    })
+    });
   });
 }
 
@@ -236,19 +236,19 @@ const options = {
   keepAlive: false,
   read: false,
   port: 1337
-}
+};
 
-process.argv.forEach(function (val, index, array) {
+process.argv.forEach(function(val, index, array) {
   if (val.indexOf('--server-port=') === 0) {
     options.port = parseInt(val.replace('--server-port=', ''));
   }
   switch (val) {
     case '--keep-alive':
       options.keepAlive = true;
-    break;
+      break;
     case '--read':
       options.read = true;
-    break;
+      break;
   }
 });
 
