@@ -141,7 +141,8 @@ async function sendData(port, data) {
       console.log('Booting...');
       await sendCommand(port, prepareCommand(commands.BOOT), false);
     } else {
-      const partial = Buffer.from(data.buffer, offset, STATUS_UPDATE_AT);
+      var bytesToWrite = Math.min(size-offset, STATUS_UPDATE_AT);
+      const partial = Buffer.from(data.buffer, offset, bytesToWrite);
 
       if (offset === MEG_32) {
         console.log('Next 32m');
@@ -149,7 +150,7 @@ async function sendData(port, data) {
       }
 
       await writeToPort(port, partial);
-      await writeNext(offset + STATUS_UPDATE_AT);
+      await writeNext(offset + bytesToWrite);
     }
   }
 
