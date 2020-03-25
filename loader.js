@@ -9,7 +9,7 @@ const commands = {
   BOOT: 'CMDS',
   WRITE: 'CMDW',
   READ: 'CMDR',
-  FILL: 'CMDF'
+  FILL: 'CMDF',
 };
 
 const ACK = 'RSPk';
@@ -77,7 +77,7 @@ async function acknowledge(port) {
 
 async function writeToPort(port, data) {
   return new Promise((resolve, reject) => {
-    port.write(data, async err => {
+    port.write(data, async (err) => {
       if (err) {
         reject(err);
       }
@@ -115,9 +115,8 @@ function prepareWriteCommand(size, offset = 0) {
   const command = prepareCommand(commands.WRITE);
   command[4] = offset;
   command[5] = 0;
-  command[6] = (size / 512) >> 8;
-  command[7] = size / 512;
-
+  command[6] = Math.ceil(size / 512) >> 8;
+  command[7] = Math.ceil(size / 512);
   return command;
 }
 
@@ -125,8 +124,8 @@ function prepareReadCommand(size, offset = 0) {
   const command = prepareCommand(commands.READ);
   command[4] = offset;
   command[5] = 0;
-  command[6] = (size / 512) >> 8;
-  command[7] = size / 512;
+  command[6] = Math.ceil(size / 512) >> 8;
+  command[7] = Math.ceil(size / 512);
 
   return command;
 }
@@ -136,24 +135,35 @@ async function sendData(port, data) {
   const size = data.byteLength;
 
   async function writeNext(offset) {
-    console.log('Writing at', `${offset / MEG}Mb/${size / MEG}Mb`);
+    const sizeInMeg = (size / MEG).toPrecision(2);
     if (offset >= size) {
-      console.log('Booting...');
+      console.log(`Written ${size} bytes. Booting...`);
       await sendCommand(port, prepareCommand(commands.BOOT), false);
     } else {
-      const partial = Buffer.from(data.buffer, offset, STATUS_UPDATE_AT);
+      const currentMeg = (offset / MEG).toPrecision(2);
+      if (sizeInMeg !== currentMeg) {
+        console.log('Writing at', `${currentMeg} Mb/${sizeInMeg} Mb`);
+      }
+      const bytesToWrite = Math.min(size - offset, STATUS_UPDATE_AT);
+      const partial = Buffer.from(data.buffer, offset, bytesToWrite);
 
       if (offset === MEG_32) {
         console.log('Next 32m');
         await sendCommand(port, prepareWriteCommand(size - MEG_32, 64), false);
       }
 
-      await writeToPort(port, partial);
-      await writeNext(offset + STATUS_UPDATE_AT);
+      if (bytesToWrite % 512 !== 0) {
+        const padded = Buffer.alloc(Math.ceil(bytesToWrite / 512) * 512, 0);
+        partial.copy(padded, 0, 0);
+        await writeToPort(port, padded);
+      } else {
+        await writeToPort(port, partial);
+      }
+      await writeNext(offset + bytesToWrite);
     }
   }
 
-  await sendCommand(port, prepareWriteCommand(size), false);
+  await sendCommand(port, prepareWriteCommand(Math.min(MEG_32, size)), false);
   await writeNext(0);
 }
 
@@ -172,18 +182,18 @@ async function prepare(port, contents) {
 }
 
 function startListening(port, socketPort) {
-  var server = net.createServer(function(socket) {
-    port.on('data', d => {
+  var server = net.createServer(function (socket) {
+    port.on('data', (d) => {
       console.log('N64:', bin2String(d));
       socket.write(cleanBinary(d));
     });
-    socket.on('data', d => {
+    socket.on('data', (d) => {
       console.log('Remote:', bin2String(d));
       port.write(d);
     });
   });
 
-  port.on('data', d => {
+  port.on('data', (d) => {
     process.stdout.write(cleanBinary(d));
   });
 
@@ -193,14 +203,14 @@ function startListening(port, socketPort) {
 function findPortAndUpload(options) {
   const { fileName, keepAlive, read } = options;
   // Enumarate ports and invoke sendData
-  ports.then(ports => {
+  ports.then((ports) => {
     ports.forEach(async ({ path }) => {
       const port = new SerialPort(path, {
-        baudRate: 9600
+        baudRate: 9600,
       });
 
       // Open errors will be emitted as an error event
-      port.on('error', function(err) {
+      port.on('error', function (err) {
         console.log('Error: ', err.message);
       });
 
@@ -212,7 +222,7 @@ function findPortAndUpload(options) {
           startListening(port, options.port);
           await sendCommand(port, prepareReadCommand(2097152));
         } else {
-          fs.readFile(fileName, async function(err, contents) {
+          fs.readFile(fileName, async function (err, contents) {
             if (err) {
               console.log('Error reading file: ', err.message);
             }
@@ -235,10 +245,10 @@ const options = {
   fileName: process.argv[2],
   keepAlive: false,
   read: false,
-  port: 1337
+  port: 1337,
 };
 
-process.argv.forEach(function(val, index, array) {
+process.argv.forEach(function (val, index, array) {
   if (val.indexOf('--server-port=') === 0) {
     options.port = parseInt(val.replace('--server-port=', ''));
   }

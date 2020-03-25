@@ -87,6 +87,10 @@ To update libdragon, set the version you need in package.json and run `npm i`.
 - [ ] Implement direct SD card access via `libdragon` filesystem API.
 - [ ] Implement a debugger for debugging the RSP.
 
+## Development
+
+You can run `npm run format` to automatically check and fix javascript code style.
+
 ## Support
 
 If this tool helped you, consider supporting its development at;

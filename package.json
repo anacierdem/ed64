@@ -1,6 +1,6 @@
 {
   "name": "ed64",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "files": [
     "loader.js",
@@ -20,13 +20,15 @@
     "installLib": "libdragon make install",
     "buildTest": "libdragon make -C test",
     "clean": "libdragon make clean",
-    "prepare": "libdragon install"
+    "prepare": "libdragon install",
+    "format": "prettier *.js --write"
   },
   "dependencies": {
-    "libdragon": "^3.0.0",
+    "libdragon": "^3.1.0",
     "serialport": "^8.0.7"
   },
   "devDependencies": {
-    "npm-run-all": "^4.1.5"
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.0.2"
   }
 }
