@@ -1,5 +1,19 @@
 # Change Log
 
+## [1.0.4] - 2020-25-03
+
+### Changed
+
+- Update libdragon to `3.1.0`
+- Update transitive dependencies
+- No need to tag for travis deploy anymore
+
+### Fixed
+
+- Inability to upload non-multiple of Mb ROMs - #18
+
+### Added
+
 ## [1.0.3] - 2020-16-02
 
 ### Changed

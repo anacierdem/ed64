@@ -31,4 +31,3 @@ deploy:
   on:
     branch: master
     repo: anacierdem/ed64
-    tags: true

@@ -115,9 +115,8 @@ function prepareWriteCommand(size, offset = 0) {
   const command = prepareCommand(commands.WRITE);
   command[4] = offset;
   command[5] = 0;
-  command[6] = (size / 512) >> 8;
-  command[7] = size / 512;
-
+  command[6] = Math.ceil(size / 512) >> 8;
+  command[7] = Math.ceil(size / 512);
   return command;
 }
 
@@ -125,8 +124,8 @@ function prepareReadCommand(size, offset = 0) {
   const command = prepareCommand(commands.READ);
   command[4] = offset;
   command[5] = 0;
-  command[6] = (size / 512) >> 8;
-  command[7] = size / 512;
+  command[6] = Math.ceil(size / 512) >> 8;
+  command[7] = Math.ceil(size / 512);
 
   return command;
 }
@@ -136,24 +135,35 @@ async function sendData(port, data) {
   const size = data.byteLength;
 
   async function writeNext(offset) {
-    console.log('Writing at', `${offset / MEG}Mb/${size / MEG}Mb`);
+    const sizeInMeg = (size / MEG).toPrecision(2);
     if (offset >= size) {
-      console.log('Booting...');
+      console.log(`Written ${size} bytes. Booting...`);
       await sendCommand(port, prepareCommand(commands.BOOT), false);
     } else {
-      const partial = Buffer.from(data.buffer, offset, STATUS_UPDATE_AT);
+      const currentMeg = (offset / MEG).toPrecision(2);
+      if (sizeInMeg !== currentMeg) {
+        console.log('Writing at', `${currentMeg} Mb/${sizeInMeg} Mb`);
+      }
+      const bytesToWrite = Math.min(size - offset, STATUS_UPDATE_AT);
+      const partial = Buffer.from(data.buffer, offset, bytesToWrite);
 
       if (offset === MEG_32) {
         console.log('Next 32m');
         await sendCommand(port, prepareWriteCommand(size - MEG_32, 64), false);
       }
 
-      await writeToPort(port, partial);
-      await writeNext(offset + STATUS_UPDATE_AT);
+      if (bytesToWrite % 512 !== 0) {
+        const padded = Buffer.alloc(Math.ceil(bytesToWrite / 512) * 512, 0);
+        partial.copy(padded, 0, 0);
+        await writeToPort(port, padded);
+      } else {
+        await writeToPort(port, partial);
+      }
+      await writeNext(offset + bytesToWrite);
     }
   }
 
-  await sendCommand(port, prepareWriteCommand(size), false);
+  await sendCommand(port, prepareWriteCommand(Math.min(MEG_32, size)), false);
   await writeNext(0);
 }
 
