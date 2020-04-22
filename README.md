@@ -34,7 +34,7 @@ You can continue monitoring serial communication after boot by providing `--keep
 
 This will print the communication on the console as well as starting a socket connection on the port given by `--server-port=1338`. If port is not given it defaults to 1337. This is the point of communication with say GDB.
 
-Tested to be working with OS v2.12
+Tested to be working with OS v2.12 on an everdrive64 v3.
 
 ## ED64 rebootable example
 

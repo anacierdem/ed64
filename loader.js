@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 
+const { withPad, bin2String, cleanBinary } = require('./loader/utils');
+const {
+  prepareCommand,
+  prepareReadCommand,
+  prepareWriteCommand,
+  commands,
+} = require('./loader/commands');
+
 const SerialPort = require('serialport');
 var fs = require('fs');
 var net = require('net');
-
-const commands = {
-  TEST: 'CMDT',
-  BOOT: 'CMDS',
-  WRITE: 'CMDW',
-  READ: 'CMDR',
-  FILL: 'CMDF',
-};
 
 const ACK = 'RSPk';
 const TIMEOUT = 1000;
@@ -22,40 +22,7 @@ const ackError = new Error('Acknowledge timeout.');
 
 const ports = SerialPort.list();
 
-function cleanBinary(array) {
-  var result = [];
-  for (var i = 0; i < array.length; i++) {
-    // assume empty c string
-    if (array[i] === 0) {
-      continue;
-    }
-    result.push(array[i]);
-  }
-  return Buffer.from(result);
-}
-
-function bin2String(array) {
-  var intermediate = cleanBinary(array);
-  var result = '';
-  for (var i = 0; i < intermediate.length; i++) {
-    result += String.fromCharCode(intermediate[i]);
-  }
-  return result;
-}
-
-function cleanBinary(array) {
-  var result = [];
-  for (var i = 0; i < array.length; i++) {
-    // assume empty c string
-    if (array[i] === 0) {
-      continue;
-    }
-    result.push(array[i]);
-  }
-  return Buffer.from(result);
-}
-
-async function acknowledge(port) {
+function acknowledge(port) {
   return new Promise((resolve, reject) => {
     const portTimeout = setTimeout(() => {
       reject(ackError);
@@ -75,9 +42,9 @@ async function acknowledge(port) {
   });
 }
 
-async function writeToPort(port, data) {
+function writeToPort(port, data) {
   return new Promise((resolve, reject) => {
-    port.write(data, async (err) => {
+    port.write(data, (err) => {
       if (err) {
         reject(err);
       }
@@ -87,47 +54,12 @@ async function writeToPort(port, data) {
 }
 
 async function sendCommand(port, command, waitAck = true) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      await writeToPort(port, command);
-      if (waitAck) {
-        resolve(await acknowledge(port));
-      } else {
-        resolve(true);
-      }
-    } catch (e) {
-      reject(e);
-    }
-  });
-}
-
-// Make sure to write 512 bytes of data to fill buffer on ed64
-function prepareCommand(command) {
-  const buffer = Buffer.alloc(512);
-  buffer[0] = command.charCodeAt(0);
-  buffer[1] = command.charCodeAt(1);
-  buffer[2] = command.charCodeAt(2);
-  buffer[3] = command.charCodeAt(3);
-  return buffer;
-}
-
-function prepareWriteCommand(size, offset = 0) {
-  const command = prepareCommand(commands.WRITE);
-  command[4] = offset;
-  command[5] = 0;
-  command[6] = Math.ceil(size / 512) >> 8;
-  command[7] = Math.ceil(size / 512);
-  return command;
-}
-
-function prepareReadCommand(size, offset = 0) {
-  const command = prepareCommand(commands.READ);
-  command[4] = offset;
-  command[5] = 0;
-  command[6] = Math.ceil(size / 512) >> 8;
-  command[7] = Math.ceil(size / 512);
-
-  return command;
+  await writeToPort(port, command);
+  if (waitAck) {
+    return await acknowledge(port);
+  } else {
+    return true;
+  }
 }
 
 async function sendData(port, data) {
@@ -152,13 +84,7 @@ async function sendData(port, data) {
         await sendCommand(port, prepareWriteCommand(size - MEG_32, 64), false);
       }
 
-      if (bytesToWrite % 512 !== 0) {
-        const padded = Buffer.alloc(Math.ceil(bytesToWrite / 512) * 512, 0);
-        partial.copy(padded, 0, 0);
-        await writeToPort(port, padded);
-      } else {
-        await writeToPort(port, partial);
-      }
+      await writeToPort(port, withPad(partial, 512));
       await writeNext(offset + bytesToWrite);
     }
   }
@@ -189,7 +115,10 @@ function startListening(port, socketPort) {
     });
     socket.on('data', (d) => {
       console.log('Remote:', bin2String(d));
-      port.write(d);
+      // ed64 can only work with data of multiples of 16bit
+      // If the buffer is filled with an odd bytes and DMA timeout
+      // triggers, last byte vanishes.
+      port.write(withPad(d, 2));
     });
   });
 

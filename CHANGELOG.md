@@ -1,5 +1,15 @@
 # Change Log
 
+## [1.0.5] - 2020-22-04
+
+### Changed
+
+- Did code simplifications and separated some to modules. Nothing changed from the public API's perspective.
+
+### Fixed
+
+- Pad output buffer to nearest 2 byte to fix everdrive v3 not being able to accept odd number of bytes.
+
 ## [1.0.4] - 2020-25-03
 
 ### Changed
