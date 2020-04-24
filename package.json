@@ -1,6 +1,6 @@
 {
   "name": "ed64",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "",
   "files": [
     "loader.js",
@@ -14,7 +14,7 @@
     "loader64": "./loader.js"
   },
   "author": "Ali Naci Erdem",
-  "license": "ISC",
+  "license": "MIT",
   "scripts": {
     "build": "run-s buildLib installLib buildTest",
     "buildLib": "libdragon make",
