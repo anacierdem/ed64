@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.1.1] - 2020-25-04
+
+### Changed
+
+- Update libdragon to `4.0.0`
+- Always rebuild the test
+- Properly expose everdrive methods
+
 ## [1.1.0] - 2020-24-04
 
 ### Changed
