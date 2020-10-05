@@ -1,6 +1,6 @@
 {
   "name": "ed64",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "",
   "files": [
     "loader.js",
@@ -25,7 +25,7 @@
     "format": "prettier *.js --write"
   },
   "dependencies": {
-    "libdragon": "^4.0.0",
+    "libdragon": "^4.1.1",
     "serialport": "^8.0.7"
   },
   "devDependencies": {

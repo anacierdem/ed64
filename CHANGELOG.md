@@ -1,5 +1,12 @@
 # Change Log
 
+## [1.2.0] - 2020-05-10
+
+### Changed
+
+- Update libdragon to `4.1.1`
+- Update dependencies
+
 ## [1.1.1] - 2020-25-04
 
 ### Changed
