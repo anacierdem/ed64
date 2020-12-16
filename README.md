@@ -92,8 +92,6 @@ To update libdragon, set the version you need in package.json and run `npm i`.
 
 You can run `npm run format` to automatically check and fix javascript code style.
 
-## Support
+## Funding
 
-If this tool helped you, consider supporting its development at;
-
-<a href="https://patreon.com/anacierdem"><img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fshieldsio-patreon.herokuapp.com%2Fanacierdem&style=for-the-badge" /> </a>
+If this tool helped you, consider supporting its development by sponsoring it!

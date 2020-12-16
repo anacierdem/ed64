@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.1] - 2020-16-12
+
+### Changed
+
+- Remove broken patreon badge
+- Update libdragon to `4.1.3`
+- Update dependencies
+
 ## [1.2.0] - 2020-05-10
 
 ### Changed
