@@ -1,5 +1,15 @@
 # Change Log
 
+## [1.2.2] - 2020-31-12
+
+### Changed
+
+- Update libdragon to `4.1.4`
+
+### Added
+
+- Dependabot configuration
+
 ## [1.2.1] - 2020-16-12
 
 ### Changed
