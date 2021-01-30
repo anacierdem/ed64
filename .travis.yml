@@ -4,10 +4,7 @@ services:
   - docker
 
 node_js:
-  - "node"
-
-node_js:
-  - "10"
+  - '10'
 
 sudo: false
 
@@ -20,9 +17,7 @@ install:
   - npm ci
 
 script:
-  - npm run buildLib
-  - npm run installLib
-  - npm run buildTest
+  - npm run build
 
 deploy:
   skip_cleanup: true

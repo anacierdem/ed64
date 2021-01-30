@@ -5,8 +5,8 @@ MKDFSPATH = $(ROOTDIR)/bin/mkdfs
 HEADERPATH = $(ROOTDIR)/mips64-elf/lib
 N64TOOL = $(ROOTDIR)/bin/n64tool
 HEADERNAME = header
-LINK_FLAGS = -L$(ROOTDIR)/mips64-elf/lib -led64 -ldragon -lc -lm -ldragonsys -Tn64.ld
-CFLAGS = -std=gnu99 -march=vr4300 -mtune=vr4300 -O2 -Wall -I$(ROOTDIR)/mips64-elf/include
+LINK_FLAGS = -L$(CURDIR)/../build -L$(ROOTDIR)/mips64-elf/lib -led64 -ldragon -lc -lm -ldragonsys -Tn64.ld
+CFLAGS = -std=gnu99 -march=vr4300 -mtune=vr4300 -O2 -Wall -I$(CURDIR)/../include -I$(ROOTDIR)/mips64-elf/include
 ASFLAGS = -mtune=vr4300 -march=vr4300
 CC = $(GCCN64PREFIX)gcc
 AS = $(GCCN64PREFIX)as
@@ -35,8 +35,10 @@ $(PROG_NAME).o: $(SOURCE_PATH)/test.c
 	mkdir -p $(BUILD_PATH)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
+$(PROG_NAME).elf: ../build/libed64.a
+
 $(PROG_NAME).elf: $(PROG_NAME).o
-	$(LD) -o $@ $^ $(LINK_FLAGS)
+	$(LD) -o $@ $< $(LINK_FLAGS)
 
 all: $(PROG_NAME)$(ROM_EXTENSION)
 

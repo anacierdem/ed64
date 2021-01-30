@@ -14,6 +14,10 @@ AR = $(N64PREFIX)ar
 
 all: libed64
 
+install:
+	install -m 0644 $(BUILD_PATH)/libed64.a $(INSTALLDIR)/mips64-elf/lib/libed64.a
+	install -m 0644 $(INCLUDE_PATH)/libed64.h $(INSTALLDIR)/mips64-elf/include/libed64.h
+
 libed64: $(BUILD_PATH)/libed64.a
 
 $(BUILD_PATH)/libed64.a: $(BUILD_PATH)/libed64.o
@@ -23,14 +27,10 @@ $(BUILD_PATH)/libed64.o: $(SOURCE_PATH)/libed64.c
 	mkdir -p $(BUILD_PATH)
 	$(CC) $(CFLAGS) -c -o $(BUILD_PATH)/libed64.o $(SOURCE_PATH)/libed64.c
 
-install:
-	install -m 0644 $(BUILD_PATH)/libed64.a $(INSTALLDIR)/mips64-elf/lib/libed64.a
-	install -m 0644 $(INCLUDE_PATH)/libed64.h $(INSTALLDIR)/mips64-elf/include/libed64.h
-
-test:
+test: libed64
 	make -C test
-
-.PHONY: clean
 
 clean:
 	rm -rf $(BUILD_PATH)/*
+
+.PHONY: clean test all libed64 install

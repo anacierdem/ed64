@@ -1,6 +1,6 @@
 {
   "name": "ed64",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "",
   "files": [
     "loader.js",
@@ -16,20 +16,17 @@
   "author": "Ali Naci Erdem",
   "license": "MIT",
   "scripts": {
-    "build": "run-s buildLib installLib buildTest",
-    "buildLib": "libdragon make",
-    "installLib": "libdragon make install",
-    "buildTest": "libdragon make -C test -B",
+    "make": "libdragon make",
+    "build": "libdragon make test",
     "clean": "libdragon make clean",
     "prepare": "libdragon install",
     "format": "prettier *.js --write"
   },
   "dependencies": {
-    "libdragon": "^6.0.0",
+    "libdragon": "^6.0.1",
     "serialport": "^8.0.7"
   },
   "devDependencies": {
-    "npm-run-all": "^4.1.5",
     "prettier": "^2.0.2"
   }
 }

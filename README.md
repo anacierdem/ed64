@@ -1,5 +1,7 @@
 # ED64 Tools
 
+[![Build Status](https://travis-ci.org/anacierdem/ed64.svg?branch=master)](https://travis-ci.org/anacierdem/ed64)
+
 This repository contains essential tools to be used with everdrive64.
 
 ## Loader
@@ -62,20 +64,26 @@ Create a new NPM project;
 
     npm init
 
-Add following to your NPM scripts;
-
-    "init": "libdragon install",
-    "prepare": "npm run init"
-
 install `ed64`;
 
     npm i ed64 --save
+
+Add following to your NPM scripts;
+
+    "prepare": "libdragon install"
+
+This will install and initialize libdragon when you do `npm i` for your repository.
 
 Now you are ready to link your project against libed64.
 
 Check out https://github.com/anacierdem/ed64-example for a full example.
 
-To update libdragon, set the version you need in package.json and run `npm i`.
+To update libdragon, run;
+
+    npm i libdragon@latest --save
+    npm i
+
+The second `npm i` will actually download the docker container and prepare it, thanks to the `prepare` script.
 
 ## Tasklist
 

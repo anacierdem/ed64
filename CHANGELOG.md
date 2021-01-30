@@ -1,5 +1,14 @@
 # Change Log
 
+## [1.2.4] - 2021-07-02
+
+### Changed
+
+- Update libdragon to `6.0.1`. Fixes #21
+- Update readme. Resolves #31, resolves #11
+- Remove `run-s` and thus `buildLib` & `installLib` & `buildTest` npm scripts. Instead the makefile does it and it reduces docker & npm overheads.
+- Directly link the test code against library output and it is now dependent on the built library. Fixes #37
+
 ## [1.2.3] - 2021-30-01
 
 ### Changed
