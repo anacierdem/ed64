@@ -1,5 +1,11 @@
 # Change Log
 
+## [1.2.3] - 2021-30-01
+
+### Changed
+
+- Update libdragon to `6.0.0`
+
 ## [1.2.2] - 2020-31-12
 
 ### Changed
