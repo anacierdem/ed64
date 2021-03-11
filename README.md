@@ -91,6 +91,8 @@ The second `npm i` will actually download the docker container and prepare it, t
 - [x] Implement a basic rebootable ROM.
 - [x] Add a hook to newlib's stdout for serial interface.
 - [x] Implement everdrive as a libdragon dependency.
+- [ ] Implement UNFloader protocol on js and use UNFloader as the usblib thus adding extended cartridge support.
+- [ ] Do a proper pif boot and prevent overwrite t ocause any issues.
 - [ ] Add screen capture & dump functionality.
 - [ ] Add a GDB stub for real-time debugging & hot replacement.
 - [ ] Implement direct SD card access via `libdragon` filesystem API.
