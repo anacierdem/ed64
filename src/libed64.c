@@ -16,7 +16,7 @@ void send_ack();
 void fill_buffer();
 void transfer_rom(bool is_read);
 
-volatile unsigned long long usb_buffer[128];
+volatile unsigned long long usb_buffer[128] __attribute__((aligned(16)));
 volatile unsigned char *usb_char_buffer;
 
 extern void _start();
