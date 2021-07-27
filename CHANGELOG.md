@@ -1,5 +1,16 @@
 # Change Log
 
+## [1.2.5] - 2021-27-07
+
+### Changed
+
+- Update libdragon to `7.0.0`
+- Update dependencies
+
+### Fixed
+
+- usb buffer is now 16 byte aligned
+
 ## [1.2.4] - 2021-07-02
 
 ### Changed
