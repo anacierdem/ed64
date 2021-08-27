@@ -23,7 +23,7 @@
     "format": "prettier *.js --write"
   },
   "dependencies": {
-    "libdragon": "^7.0.0",
+    "libdragon": "^8.0.0",
     "serialport": "^8.0.7"
   },
   "devDependencies": {
