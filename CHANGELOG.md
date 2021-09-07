@@ -1,6 +1,23 @@
 # Change Log
 
-## [1.2.5] - 2021-27-07
+## [2.0.0] - 2021-08-30
+
+### Changed
+
+- Update libdragon to `9.0.0`
+- Update test Makefile
+- Remove ed64 library, root Makefile, reboot support, socket server and `read`
+command
+- Update readme to match
+
+### Added
+
+- Implement simple ROM loading support for OS 3.x
+- Implement UNFLoader text display support
+- Automated native executable build
+- Proper command line argument handling
+
+## [1.2.5] - 2021-07-27
 
 ### Changed
 
@@ -11,7 +28,7 @@
 
 - usb buffer is now 16 byte aligned
 
-## [1.2.4] - 2021-07-02
+## [1.2.4] - 2021-02-07
 
 ### Changed
 
@@ -20,13 +37,13 @@
 - Remove `run-s` and thus `buildLib` & `installLib` & `buildTest` npm scripts. Instead the makefile does it and it reduces docker & npm overheads.
 - Directly link the test code against library output and it is now dependent on the built library. Fixes #37
 
-## [1.2.3] - 2021-30-01
+## [1.2.3] - 2021-01-30
 
 ### Changed
 
 - Update libdragon to `6.0.0`
 
-## [1.2.2] - 2020-31-12
+## [1.2.2] - 2020-12-12
 
 ### Changed
 
@@ -36,7 +53,7 @@
 
 - Dependabot configuration
 
-## [1.2.1] - 2020-16-12
+## [1.2.1] - 2020-12-16
 
 ### Changed
 
@@ -44,14 +61,14 @@
 - Update libdragon to `4.1.3`
 - Update dependencies
 
-## [1.2.0] - 2020-05-10
+## [1.2.0] - 2020-10-05
 
 ### Changed
 
 - Update libdragon to `4.1.1`
 - Update dependencies
 
-## [1.1.1] - 2020-25-04
+## [1.1.1] - 2020-04-25
 
 ### Changed
 
@@ -59,13 +76,13 @@
 - Always rebuild the test
 - Properly expose everdrive methods
 
-## [1.1.0] - 2020-24-04
+## [1.1.0] - 2020-04-24
 
 ### Changed
 
 - MIT license
 
-## [1.0.5] - 2020-22-04
+## [1.0.5] - 2020-04-22
 
 ### Changed
 
@@ -75,7 +92,7 @@
 
 - Pad output buffer to nearest 2 byte to fix everdrive v3 not being able to accept odd number of bytes.
 
-## [1.0.4] - 2020-25-03
+## [1.0.4] - 2020-03-25
 
 ### Changed
 
@@ -92,7 +109,7 @@
 - Add prettier to development dependencies.
 - **Development** section added to the readme.
 
-## [1.0.3] - 2020-16-02
+## [1.0.3] - 2020-02-16
 
 ### Changed
 
@@ -111,54 +128,3 @@
 ### Added
 
 - Prettier configuration.
-
-## [1.0.2] - 2019-07-12
-
-### Changed
-
-- Update libdragon to `2.0.3`
-
-### Added
-
-- Add support information.
-
-## [1.0.1] - 2019-01-12
-
-### Changed
-
-- Updated libdragon to `2.0.2`
-
-## [0.2.4] - 2019-09-11
-
-### Fixed
-
-- Add memory barriers.
-- Add initial everdrive dma waits.
-- Remove unused dma wait and fix ROM values.
-- Properly print output of N64.
-- Pipe output to stdout instead of console.log.
-- Remove unnecessary register reads.
-
-## [0.2.3] - 2019-09-11
-
-### Fixed
-
-- Fix a bug causing inability to upload image.
-
-## [0.2.2] - 2019-01-11 - DEPRECATED
-
-### Changed
-
-- Updated libdragon. We now use the active libdragon version instead of base on CI.
-
-## [0.2.1] - 2019-31-10 - DEPRECATED
-
-### Changed
-
-- Use `libdragon install` instead of download.
-
-## [0.2.0] - 2019-31-10 - DEPRECATED
-
-### Added
-
-- Pipe ED64 output to a socket.

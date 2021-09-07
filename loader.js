@@ -1,37 +1,38 @@
 #!/usr/bin/env node
 
-const { withPad, bin2String, cleanBinary } = require('./loader/utils');
-const {
-  prepareCommand,
-  prepareReadCommand,
-  prepareWriteCommand,
-  commands,
-} = require('./loader/commands');
+const { withPad } = require('./loader/utils');
+const { prepareCommand, commands } = require('./loader/commands');
 
 const SerialPort = require('serialport');
-var fs = require('fs');
-var net = require('net');
+const fs = require('fs');
 
-const ACK = 'RSPk';
+const ACK = Buffer.from('cmdr\0', 'ascii');
 const TIMEOUT = 1000;
-const MEG = 1024 * 1024;
-const STATUS_UPDATE_AT = MEG;
-const MEG_32 = 32 * MEG;
 
-const ackError = new Error('Acknowledge timeout.');
+// TODO: add progress support
+// const MEG = 1024 * 1024;
+// const STATUS_UPDATE_AT = MEG;
 
-const ports = SerialPort.list();
+const ROM_START_ADDRESS = 0x10000000;
+const CRC_AREA = 0x100000 + 4096;
 
+const STATUS_ERROR = 1;
+const STATUS_BAD_PARAM = 1;
+
+/**
+ * Waits for an ack from the Everdrive
+ * @param port
+ * @returns true if achnowledged on time
+ */
 function acknowledge(port) {
   return new Promise((resolve, reject) => {
     const portTimeout = setTimeout(() => {
-      reject(ackError);
+      resolve(false);
       port.close();
     }, TIMEOUT);
 
     function wait(data) {
-      const response = bin2String(data);
-      if (response.indexOf(ACK) > -1) {
+      if (data.includes(ACK)) {
         clearTimeout(portTimeout);
         port.removeListener('data', wait);
         resolve(true);
@@ -47,148 +48,216 @@ function writeToPort(port, data) {
     port.write(data, (err) => {
       if (err) {
         reject(err);
+        return;
       }
       resolve(true);
     });
   });
 }
 
-async function sendCommand(port, command, waitAck = true) {
-  await writeToPort(port, command);
-  if (waitAck) {
-    return await acknowledge(port);
-  } else {
-    return true;
-  }
-}
-
 async function sendData(port, data) {
-  console.log('Sending...');
+  data = withPad(data, 512);
   const size = data.byteLength;
 
-  async function writeNext(offset) {
-    const sizeInMeg = (size / MEG).toPrecision(2);
-    if (offset >= size) {
-      console.log(`Written ${size} bytes. Booting...`);
-      await sendCommand(port, prepareCommand(commands.BOOT), false);
+  if (size < CRC_AREA) {
+    console.log('Start fill');
+    await writeToPort(
+      port,
+      prepareCommand(commands.ROM_FILL, ROM_START_ADDRESS, CRC_AREA)
+    );
+
+    console.log('Fill complete, now checking...');
+
+    if (await acknowledge(port)) {
+      console.log('Fill success.');
     } else {
-      const currentMeg = (offset / MEG).toPrecision(2);
-      if (sizeInMeg !== currentMeg) {
-        console.log('Writing at', `${currentMeg} Mb/${sizeInMeg} Mb`);
-      }
-      const bytesToWrite = Math.min(size - offset, STATUS_UPDATE_AT);
-      const partial = Buffer.from(data.buffer, offset, bytesToWrite);
-
-      if (offset === MEG_32) {
-        console.log('Next 32m');
-        await sendCommand(port, prepareWriteCommand(size - MEG_32, 64), false);
-      }
-
-      await writeToPort(port, withPad(partial, 512));
-      await writeNext(offset + bytesToWrite);
+      console.error('Error filling memory.');
+      process.exit(STATUS_ERROR);
     }
   }
 
-  await sendCommand(port, prepareWriteCommand(Math.min(MEG_32, size)), false);
-  await writeNext(0);
-}
+  await writeToPort(
+    port,
+    prepareCommand(commands.ROM_WRITE, ROM_START_ADDRESS, size)
+  );
 
-async function prepare(port, contents) {
-  if (contents.byteLength < 2097152) {
-    try {
-      await sendCommand(port, prepareCommand(commands.FILL));
-      console.log('Fill success!');
-      await sendData(port, contents);
-    } catch (e) {
-      console.error('Fill error!');
-    }
+  console.log('Sending...');
+
+  await writeToPort(port, data);
+
+  console.log('Now booting...');
+  await writeToPort(port, prepareCommand(commands.ROM_START, 0, 0, 1));
+
+  const buffer = Buffer.alloc(256);
+  await writeToPort(port, buffer);
+
+  if (await acknowledge(port)) {
+    console.log('Done uploading.');
   } else {
-    await sendData(port, contents);
+    console.error('Error uploading.');
+    process.exit(STATUS_ERROR);
   }
 }
 
-function startListening(port, socketPort) {
-  var server = net.createServer(function (socket) {
-    port.on('data', (d) => {
-      console.log('N64:', bin2String(d));
-      socket.write(cleanBinary(d));
-    });
-    socket.on('data', (d) => {
-      console.log('Remote:', bin2String(d));
-      // ed64 can only work with data of multiples of 16bit
-      // If the buffer is filled with an odd bytes and DMA timeout
-      // triggers, last byte vanishes.
-      port.write(withPad(d, 2));
-    });
-  });
+const DATATYPE_TEXT = 0x01;
+const DATATYPE_RAWBINARY = 0x02;
+const DATATYPE_HEADER = 0x03;
+const DATATYPE_SCREENSHOT = 0x04;
 
+function startListening(port) {
+  let buffer = Buffer.alloc(0);
+  let headerData = Buffer.alloc(16);
   port.on('data', (d) => {
-    process.stdout.write(cleanBinary(d));
-  });
+    buffer = Buffer.concat([buffer, d]);
+    const headerMarker = buffer.indexOf(Buffer.from('DMA@', 'ascii'));
 
-  server.listen(socketPort, '127.0.0.1');
+    if (headerMarker < 0) {
+      // Don't have a marker yet
+      return;
+    }
+
+    let read = headerMarker + 4;
+
+    if (read + 4 > buffer.length) {
+      // Don't have enough data for header yet
+      return;
+    }
+
+    // We can read the 4 byte header now
+    const header = buffer.readInt32BE(read);
+    const size = header & 0x00ffffff;
+    const type = (header & 0xff000000) >> 24;
+    read += 4;
+
+    if (read + size + 4 > buffer.length) {
+      // Don't have enough data yet for data + cmp
+      return;
+    }
+
+    const data = buffer.slice(read, read + size);
+    read += size;
+
+    if (
+      buffer.slice(read, read + 4).compare(Buffer.from('CMPH', 'ascii')) !== 0
+    ) {
+      console.error('Incomplete packet was received: ' + data.toString());
+    }
+    read += 4;
+
+    switch (type) {
+      case DATATYPE_TEXT:
+        process.stdout.write(data);
+        break;
+      case DATATYPE_HEADER:
+        console.assert(
+          data.length == 16,
+          `Header size was not correct expected 16 received: ${data.length}`
+        );
+        data.copy(headerData);
+        break;
+      case DATATYPE_SCREENSHOT:
+        const headerType = headerData.readInt32BE(0);
+        const depth = headerData.readInt32BE(1);
+        const width = headerData.readInt32BE(2);
+        const height = headerData.readInt32BE(3);
+        console.assert(
+          headerType == DATATYPE_SCREENSHOT,
+          `Last received header was not ${DATATYPE_SCREENSHOT}, received: ${headerType}`
+        );
+        headerData.fill(0);
+        // TODO: handle screenshot
+        break;
+
+      case DATATYPE_RAWBINARY:
+        // TODO: handle binary file
+        break;
+    }
+
+    const newBuf = Buffer.alloc(buffer.length - read);
+    buffer.copy(newBuf, 0, read);
+    buffer = newBuf;
+  });
 }
 
-function findPortAndUpload(options) {
-  const { fileName, keepAlive, read } = options;
-  // Enumarate ports and invoke sendData
-  ports.then((ports) => {
-    ports.forEach(async ({ path }) => {
+async function findPortAndUpload(options) {
+  try {
+    const { fileName, keepAlive } = options;
+    // Enumarate ports and invoke sendData
+    const ports = await SerialPort.list();
+    let found = false;
+    for (let { path } of ports) {
       const port = new SerialPort(path, {
         baudRate: 9600,
       });
 
-      // Open errors will be emitted as an error event
+      // Open errors will be emitted as an error event, just let user know
       port.on('error', function (err) {
-        console.log('Error: ', err.message);
+        console.error('Port Error: ', err.message);
       });
 
-      try {
-        await sendCommand(port, prepareCommand(commands.TEST));
+      found = await writeToPort(port, prepareCommand(commands.TEST));
+      if (found) {
         console.log('Found ED64 on', path);
 
-        if (read) {
-          startListening(port, options.port);
-          await sendCommand(port, prepareReadCommand(2097152));
-        } else {
-          fs.readFile(fileName, async function (err, contents) {
-            if (err) {
-              console.log('Error reading file: ', err.message);
-            }
-            await prepare(port, contents);
-            if (keepAlive) {
-              startListening(port, options.port);
-            } else {
-              port.close();
-            }
-          });
-        }
-      } catch (e) {
-        if (e !== ackError) console.log(e.message);
+        fs.readFile(fileName, async function (err, contents) {
+          if (err) {
+            console.error('Error reading file: ', err.message);
+            process.exit(STATUS_ERROR);
+          }
+
+          await sendData(port, contents);
+
+          if (keepAlive) {
+            startListening(port, options.port);
+          } else {
+            port.close();
+          }
+        });
       }
-    });
-  });
+    }
+    if (!found) {
+      console.error('No everdrive found!');
+      process.exit(STATUS_ERROR);
+    }
+  } catch (e) {
+    console.error(`Error occurred: ${e.message}`);
+    process.exit(STATUS_ERROR);
+  }
 }
 
 const options = {
-  fileName: process.argv[2],
   keepAlive: false,
-  read: false,
   port: 1337,
 };
 
+// TODO: add shorthand syntax
 process.argv.forEach(function (val, index, array) {
-  if (val.indexOf('--server-port=') === 0) {
-    options.port = parseInt(val.replace('--server-port=', ''));
+  if (index < 2) {
+    return;
   }
+
   switch (val) {
     case '--keep-alive':
       options.keepAlive = true;
-      break;
-    case '--read':
-      options.read = true;
-      break;
+      return;
   }
+
+  if (val.indexOf('--') === 0) {
+    console.error(`encountered unknown flag: ${val}`);
+    process.exit(STATUS_BAD_PARAM);
+  }
+
+  if (options.fileName || !val) {
+    console.error('You must provide a single ROM file to read from');
+    process.exit(STATUS_BAD_PARAM);
+  }
+
+  if (!fs.existsSync(val) || fs.statSync(val).isDirectory()) {
+    console.error(`${val} does not exist or is a directory`);
+    process.exit(STATUS_BAD_PARAM);
+  }
+
+  options.fileName = val;
 });
 
 findPortAndUpload(options);
