@@ -16,6 +16,7 @@ command
 - Implement UNFLoader text display support
 - Automated native executable build
 - Proper command line argument handling
+- Progress display
 
 ## [1.2.5] - 2021-07-27
 

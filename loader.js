@@ -9,9 +9,9 @@ const fs = require('fs');
 const ACK = Buffer.from('cmdr\0', 'ascii');
 const TIMEOUT = 1000;
 
-// TODO: add progress support
-// const MEG = 1024 * 1024;
-// const STATUS_UPDATE_AT = MEG;
+const MEG = 1024 * 1024;
+// This should be a multiple of 512
+const STATUS_UPDATE_AT = MEG;
 
 const ROM_START_ADDRESS = 0x10000000;
 const CRC_AREA = 0x100000 + 4096;
@@ -83,7 +83,18 @@ async function sendData(port, data) {
 
   console.log('Sending...');
 
-  await writeToPort(port, data);
+  async function continueUpload(offset = 0) {
+    const remainingBytes = size - offset;
+    if (remainingBytes > 0) {
+      const amount = Math.min(STATUS_UPDATE_AT, remainingBytes);
+      const nextOffset = offset + amount;
+      await writeToPort(port, data.slice(offset, nextOffset));
+      console.log(`Uploaded ${((nextOffset / size) * 100).toFixed(2)}%`);
+      await continueUpload(nextOffset);
+    }
+  }
+
+  await continueUpload();
 
   console.log('Now booting...');
   await writeToPort(port, prepareCommand(commands.ROM_START, 0, 0, 1));
