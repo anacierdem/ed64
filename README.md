@@ -1,64 +1,42 @@
 # ED64 Tools
 
-[![Build Status](https://travis-ci.org/anacierdem/ed64.svg?branch=master)](https://travis-ci.org/anacierdem/ed64)
+[![Build](https://github.com/anacierdem/ed64/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/anacierdem/ed64/actions/workflows/ci.yml?branch=master)
 
-This repository contains essential tools to be used with everdrive64.
+This repository contains essential tools to be used with everdrive64 (v3 and x7) and `libdragon`.
+Libdragon is not a requirement as long as your ROM supports the UNFLoader protocol.
+Tested to be working with OS v3.05 on an everdrive64 v3. Should also work on an X7.
 
 ## Loader
 
-Use it to upload your z64 images to ED64. Usage;
-
-First, make sure you have node.js (>= 7.6).
-
-Install globally;
+Use this to upload your z64 images to ED64. Make sure you have node.js (>= 14) and install globally;
 
     npm install -g ed64
 
-And invoke;
+Or you can grap the pre-built executable from the releases and put it somewhere on your PATH if you are on Windows. Then you won't need node.js on you machine.
 
-    loader64 [path to your file]
+Then invoke the loader;
 
-Install locally;
+    loader64 <rom file> [flags]
 
-    npm install ed64
+You can start listening for UNFLoader style text messages and pipe them to the stdout after boot by providing `--keep-alive`.
 
-And invoke;
+    loader64 <rom file> --keep-alive
 
-    node ./node_modules/ed64/loader.js [path to your file]
+## ED64 example
 
-Or on this repository's root;
+In the `./src` folder you can find a N64 program. To be able to use it;
 
-    node ./loader.js [path to your file]
-
-You can continue monitoring serial communication after boot by providing `--keep-alive`.
-
-    loader64 [path to your file] --keep-alive
-
-This will print the communication on the console as well as starting a socket connection on the port given by `--server-port=1338`. If port is not given it defaults to 1337. This is the point of communication with say GDB.
-
-Tested to be working with OS v2.12 on an everdrive64 v3.
-
-## ED64 rebootable example
-
-In the `./src` folder you can find a N64 program capable of rebooting on loader upload. To be able to use it;
-
-- Make sure you have node.js (>= 7.6) and docker installed on your machine.
+- Make sure you have node.js (>= 14) and docker installed on your machine.
 - Install vscode.
 - Run `npm install` on this repository's root.
 - `libdragon` toolchain will be installed automatically as a docker container (named ed64) on your computer.
 - Connect your Everdrive64 via USB and turn on your N64.
 - Open this folder with vscode and hit F5.
-- Stop and restart the project via vscode.
-- Voila! You have a re-uploadable executable with print debugging.
+- Voila! You have an executable with print debugging.
 
-When calling `everdrive_init(true)`, the first parameter determines whether to hook to stdio or not. If you pass `true`, all standard outputs will go serial over USB.
+When using `libdragon` all standard error will go serial over USB.
 
-If you need change anything outside of main function, move your function after the library code. You can do this using a section `.text.*` and these will be mapped after any library code and will not shift anything until `_start` is called. For example for a vblank handler;
-
-    void vblCallback(void) __attribute__((section(".text.after")));
-    void vblCallback(void) {}
-
-### Making a project rebootable
+### Creating a new libdragon project
 
 Create a new NPM project;
 
@@ -74,10 +52,6 @@ Add following to your NPM scripts;
 
 This will install and initialize libdragon when you do `npm i` for your repository.
 
-Now you are ready to link your project against libed64.
-
-Check out https://github.com/anacierdem/ed64-example for a full example.
-
 To update libdragon, run;
 
     npm i libdragon@latest --save
@@ -85,14 +59,14 @@ To update libdragon, run;
 
 The second `npm i` will actually download the docker container and prepare it, thanks to the `prepare` script.
 
+To invoke the locally installed loader;
+
+    npx loader64 <rom file> [flags]
+
 ## Tasklist
 
-- [x] Implement ROM loader on js.
-- [x] Implement a basic rebootable ROM.
-- [x] Add a hook to newlib's stdout for serial interface.
-- [x] Implement everdrive as a libdragon dependency.
-- [ ] Implement UNFloader protocol on js and use UNFloader as the usblib thus adding extended cartridge support.
-- [ ] Do a proper pif boot and prevent overwrite t ocause any issues.
+- [x] Implement ROM loader.
+- [x] Implement UNFloader protocol on js and use UNFloader as the usblib thus adding extended cartridge support.
 - [ ] Add screen capture & dump functionality.
 - [ ] Add a GDB stub for real-time debugging & hot replacement.
 - [ ] Implement direct SD card access via `libdragon` filesystem API.
@@ -101,6 +75,10 @@ The second `npm i` will actually download the docker container and prepare it, t
 ## Development
 
 You can run `npm run format` to automatically check and fix javascript code style.
+
+To invoke the local version do;
+
+    npx loader64 <rom file> [flags]
 
 ## Funding
 

@@ -10,7 +10,7 @@
             "name": "Launch Program",
             // For a dependent project use; "program": "${workspaceFolder}/node_modules/ed64/loader.js",
             "program": "${workspaceFolder}/loader.js",
-            "args": ["./build/test.z64", "--keep-alive"],
+            "args": ["./src/test.z64", "--keep-alive"],
             "preLaunchTask": "build",
             "outputCapture": "std",
             "internalConsoleOptions": "openOnSessionStart"
