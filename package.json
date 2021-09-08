@@ -23,15 +23,23 @@
     "clean": "libdragon make -C ./src clean",
     "prepare": "libdragon install",
     "format": "prettier *.js --write",
+    "format-check": "prettier *.js --check",
+    "lint": "eslint --fix *.js",
+    "lint-check": "eslint *.js",
     "pack": "pkg ./"
   },
   "dependencies": {
-    "libdragon": "^9.0.0",
     "serialport": "^8.0.7"
   },
   "devDependencies": {
+    "libdragon": "^9",
+    "eslint": "^7.32.0",
+    "eslint-config-google": "^0.14.0",
     "pkg": "^5.3.1",
     "prettier": "^2.0.2"
+  },
+  "peerDependencies": {
+    "libdragon": "^9"
   },
   "pkg": {
     "name": "test",

@@ -12,7 +12,7 @@ Use this to upload your z64 images to ED64. Make sure you have node.js (>= 14) a
 
     npm install -g ed64
 
-Or you can grap the pre-built executable from the releases and put it somewhere on your PATH if you are on Windows. Then you won't need node.js on you machine.
+Or you can grab the pre-built executable from the releases and put it somewhere on your PATH if you are on Windows. Then you won't need node.js on you machine.
 
 Then invoke the loader;
 
@@ -74,7 +74,7 @@ To invoke the locally installed loader;
 
 ## Development
 
-You can run `npm run format` to automatically check and fix javascript code style.
+You can run `npm run format` to automatically check and fix javascript code style and `npm run lint` to fix linter error that are auto fixable.
 
 To invoke the local version do;
 

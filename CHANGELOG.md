@@ -1,6 +1,21 @@
 # Change Log
 
-## [2.0.0] - 2021-08-30
+## [2.0.1] - 2021-09-08
+
+### Changed
+
+- Make libdragon a peer dependency
+- Add eslint
+
+### Fixed
+
+- Improve actions
+  - Add names
+  - Add registry url
+  - Also do a dry publish run
+  - Add CI checks for formatter/linter
+
+## [2.0.0] - 2021-09-07
 
 ### Changed
 

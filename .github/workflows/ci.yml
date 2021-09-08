@@ -1,4 +1,4 @@
-name: Verify
+name: Build
 
 on: [push, pull_request]
 
@@ -6,13 +6,24 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Prepare
+        uses: actions/setup-node@v2
         with:
           node-version: '14'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install
         run: npm ci
 
       - name: Test build
-        run: npm run build
+        run: |
+          npm run build
+          npm run clean
+          npm run format-check
+          npm run lint-check
+
+      - name: Test publish
+        run: npm publish --dry-run

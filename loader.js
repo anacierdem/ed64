@@ -25,7 +25,7 @@ const STATUS_BAD_PARAM = 1;
  * @returns true if achnowledged on time
  */
 function acknowledge(port) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const portTimeout = setTimeout(() => {
       resolve(false);
       port.close();
@@ -166,11 +166,11 @@ function startListening(port) {
         );
         data.copy(headerData);
         break;
-      case DATATYPE_SCREENSHOT:
+      case DATATYPE_SCREENSHOT: {
         const headerType = headerData.readInt32BE(0);
-        const depth = headerData.readInt32BE(1);
-        const width = headerData.readInt32BE(2);
-        const height = headerData.readInt32BE(3);
+        // const depth = headerData.readInt32BE(1);
+        // const width = headerData.readInt32BE(2);
+        // const height = headerData.readInt32BE(3);
         console.assert(
           headerType == DATATYPE_SCREENSHOT,
           `Last received header was not ${DATATYPE_SCREENSHOT}, received: ${headerType}`
@@ -178,7 +178,7 @@ function startListening(port) {
         headerData.fill(0);
         // TODO: handle screenshot
         break;
-
+      }
       case DATATYPE_RAWBINARY:
         // TODO: handle binary file
         break;
@@ -242,7 +242,7 @@ const options = {
 };
 
 // TODO: add shorthand syntax
-process.argv.forEach(function (val, index, array) {
+process.argv.forEach(function (val, index) {
   if (index < 2) {
     return;
   }
