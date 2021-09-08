@@ -25,5 +25,7 @@ jobs:
           npm run format-check
           npm run lint-check
 
-      - name: Test publish
-        run: npm publish --dry-run
+      - name: Test publish & release
+        run: |
+          npm run pack
+          npm publish --dry-run
