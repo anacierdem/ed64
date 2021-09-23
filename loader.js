@@ -120,73 +120,69 @@ function startListening(port) {
   let headerData = Buffer.alloc(16);
   port.on('data', (d) => {
     buffer = Buffer.concat([buffer, d]);
-    const headerMarker = buffer.indexOf(Buffer.from('DMA@', 'ascii'));
+    let headerMarker = -1;
+    while ((headerMarker = buffer.indexOf(Buffer.from('DMA@', 'ascii'))) >= 0) {
+      let read = headerMarker + 4;
 
-    if (headerMarker < 0) {
-      // Don't have a marker yet
-      return;
-    }
-
-    let read = headerMarker + 4;
-
-    if (read + 4 > buffer.length) {
-      // Don't have enough data for header yet
-      return;
-    }
-
-    // We can read the 4 byte header now
-    const header = buffer.readInt32BE(read);
-    const size = header & 0x00ffffff;
-    const type = (header & 0xff000000) >> 24;
-    read += 4;
-
-    if (read + size + 4 > buffer.length) {
-      // Don't have enough data yet for data + cmp
-      return;
-    }
-
-    const data = buffer.slice(read, read + size);
-    read += size;
-
-    if (
-      buffer.slice(read, read + 4).compare(Buffer.from('CMPH', 'ascii')) !== 0
-    ) {
-      console.error('Incomplete packet was received: ' + data.toString());
-    }
-    read += 4;
-
-    switch (type) {
-      case DATATYPE_TEXT:
-        process.stdout.write(data);
-        break;
-      case DATATYPE_HEADER:
-        console.assert(
-          data.length == 16,
-          `Header size was not correct expected 16 received: ${data.length}`
-        );
-        data.copy(headerData);
-        break;
-      case DATATYPE_SCREENSHOT: {
-        const headerType = headerData.readInt32BE(0);
-        // const depth = headerData.readInt32BE(1);
-        // const width = headerData.readInt32BE(2);
-        // const height = headerData.readInt32BE(3);
-        console.assert(
-          headerType == DATATYPE_SCREENSHOT,
-          `Last received header was not ${DATATYPE_SCREENSHOT}, received: ${headerType}`
-        );
-        headerData.fill(0);
-        // TODO: handle screenshot
+      if (read + 4 > buffer.length) {
+        // Don't have enough data for header yet
         break;
       }
-      case DATATYPE_RAWBINARY:
-        // TODO: handle binary file
-        break;
-    }
 
-    const newBuf = Buffer.alloc(buffer.length - read);
-    buffer.copy(newBuf, 0, read);
-    buffer = newBuf;
+      // We can read the 4 byte header now
+      const header = buffer.readInt32BE(read);
+      const size = header & 0x00ffffff;
+      const type = (header & 0xff000000) >> 24;
+      read += 4;
+
+      if (read + size + 4 > buffer.length) {
+        // Don't have enough data yet for data + cmp
+        break;
+      }
+
+      const data = buffer.slice(read, read + size);
+      read += size;
+
+      if (
+        buffer.slice(read, read + 4).compare(Buffer.from('CMPH', 'ascii')) !== 0
+      ) {
+        console.error('Incomplete packet was received: ' + data.toString());
+      }
+      read += 4;
+
+      switch (type) {
+        case DATATYPE_TEXT:
+          process.stdout.write(data);
+          break;
+        case DATATYPE_HEADER:
+          console.assert(
+            data.length == 16,
+            `Header size was not correct expected 16 received: ${data.length}`
+          );
+          data.copy(headerData);
+          break;
+        case DATATYPE_SCREENSHOT: {
+          const headerType = headerData.readInt32BE(0);
+          // const depth = headerData.readInt32BE(1);
+          // const width = headerData.readInt32BE(2);
+          // const height = headerData.readInt32BE(3);
+          console.assert(
+            headerType == DATATYPE_SCREENSHOT,
+            `Last received header was not ${DATATYPE_SCREENSHOT}, received: ${headerType}`
+          );
+          headerData.fill(0);
+          // TODO: handle screenshot
+          break;
+        }
+        case DATATYPE_RAWBINARY:
+          // TODO: handle binary file
+          break;
+      }
+
+      const newBuf = Buffer.alloc(buffer.length - read);
+      buffer.copy(newBuf, 0, read);
+      buffer = newBuf;
+    }
   });
 }
 
