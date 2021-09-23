@@ -1,5 +1,15 @@
 # Change Log
 
+## [2.0.2] - 2021-09-23
+
+### Added
+
+- Pack and dry publish on ci
+
+### Fixed
+
+- Fix a bug causing the listen mode to skip logs
+
 ## [2.0.1] - 2021-09-08
 
 ### Changed
