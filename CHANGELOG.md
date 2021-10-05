@@ -1,5 +1,21 @@
 # Change Log
 
+
+## [2.0.3] - 2021-10-05
+
+### Added
+
+- Timeout for ROM upload. It will not wait forever if there is a comm. problem
+
+### Changed
+
+- Update libdragon docker
+
+### Fixed
+
+- Fix everdrive detection bug. Now all serial ports are properly searched
+- Improve parameter handling
+
 ## [2.0.2] - 2021-09-23
 
 ### Added

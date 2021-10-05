@@ -1,6 +1,6 @@
 {
   "name": "ed64",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "",
   "files": [
     "loader.js",
@@ -21,7 +21,7 @@
   "scripts": {
     "build": "libdragon make -C ./src",
     "clean": "libdragon make -C ./src clean",
-    "prepare": "libdragon install",
+    "prepare": "libdragon init",
     "format": "prettier *.js --write",
     "format-check": "prettier *.js --check",
     "lint": "eslint --fix *.js",
@@ -32,14 +32,14 @@
     "serialport": "^8.0.7"
   },
   "devDependencies": {
-    "libdragon": "^9",
     "eslint": "^7.32.0",
     "eslint-config-google": "^0.14.0",
+    "libdragon": "^10.0.0",
     "pkg": "^5.3.1",
     "prettier": "^2.0.2"
   },
   "peerDependencies": {
-    "libdragon": "^9"
+    "libdragon": "^10.0.0"
   },
   "pkg": {
     "name": "test",

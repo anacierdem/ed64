@@ -8,12 +8,14 @@
 int main(void)
 {
     init_interrupts();
+    console_init();
 
+    console_set_debug(true);
     debug_init_usblog();
 
     while (1)
     {
-        debugf("Hello world!\n");
+        printf("Hello world!\n");
         unsigned long stop = 100 + get_ticks_ms();
         while (stop > get_ticks_ms());
     }

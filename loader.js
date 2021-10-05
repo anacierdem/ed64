@@ -7,11 +7,12 @@ const SerialPort = require('serialport');
 const fs = require('fs');
 
 const ACK = Buffer.from('cmdr\0', 'ascii');
-const TIMEOUT = 1000;
+const TEST_TIMEOUT = 1000;
 
 const MEG = 1024 * 1024;
 // This should be a multiple of 512
 const STATUS_UPDATE_AT = MEG;
+const STATUS_TIMEOUT = 2000;
 
 const ROM_START_ADDRESS = 0x10000000;
 const CRC_AREA = 0x100000 + 4096;
@@ -24,15 +25,17 @@ const STATUS_BAD_PARAM = 1;
  * @param port
  * @returns true if achnowledged on time
  */
-function acknowledge(port) {
+function test(port) {
   return new Promise((resolve) => {
     const portTimeout = setTimeout(() => {
       resolve(false);
       port.close();
-    }, TIMEOUT);
+    }, TEST_TIMEOUT);
 
+    let buffer = Buffer.alloc(0);
     function wait(data) {
-      if (data.includes(ACK)) {
+      buffer = Buffer.concat([buffer, data]);
+      if (buffer.includes(ACK)) {
         clearTimeout(portTimeout);
         port.removeListener('data', wait);
         resolve(true);
@@ -56,57 +59,59 @@ function writeToPort(port, data) {
 }
 
 async function sendData(port, data) {
-  data = withPad(data, 512);
-  const size = data.byteLength;
-
-  if (size < CRC_AREA) {
-    console.log('Start fill');
-    await writeToPort(
-      port,
-      prepareCommand(commands.ROM_FILL, ROM_START_ADDRESS, CRC_AREA)
-    );
-
-    console.log('Fill complete, now checking...');
-
-    if (await acknowledge(port)) {
-      console.log('Fill success.');
-    } else {
-      console.error('Error filling memory.');
-      process.exit(STATUS_ERROR);
-    }
-  }
-
-  await writeToPort(
-    port,
-    prepareCommand(commands.ROM_WRITE, ROM_START_ADDRESS, size)
-  );
-
-  console.log('Sending...');
-
-  async function continueUpload(offset = 0) {
+  async function continueUpload(size, offset = 0) {
     const remainingBytes = size - offset;
     if (remainingBytes > 0) {
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => {
+          reject(new Error('Upload timed out.'));
+        }, STATUS_TIMEOUT)
+      );
+
       const amount = Math.min(STATUS_UPDATE_AT, remainingBytes);
       const nextOffset = offset + amount;
-      await writeToPort(port, data.slice(offset, nextOffset));
+      await Promise.race([
+        timeout,
+        writeToPort(port, data.slice(offset, nextOffset)),
+      ]);
       console.log(`Uploaded ${((nextOffset / size) * 100).toFixed(2)}%`);
-      await continueUpload(nextOffset);
+      await continueUpload(size, nextOffset);
     }
   }
 
-  await continueUpload();
+  try {
+    data = withPad(data, 512);
+    const size = data.byteLength;
 
-  console.log('Now booting...');
-  await writeToPort(port, prepareCommand(commands.ROM_START, 0, 0, 1));
+    if (size < CRC_AREA) {
+      console.log('Start fill');
+      await writeToPort(
+        port,
+        prepareCommand(commands.ROM_FILL, ROM_START_ADDRESS, CRC_AREA)
+      );
 
-  const buffer = Buffer.alloc(256);
-  await writeToPort(port, buffer);
+      console.log('Fill complete.');
+    }
 
-  if (await acknowledge(port)) {
+    await writeToPort(
+      port,
+      prepareCommand(commands.ROM_WRITE, ROM_START_ADDRESS, size)
+    );
+
+    console.log('Sending...');
+
+    await continueUpload(size);
+
+    console.log('Now booting...');
+    await writeToPort(port, prepareCommand(commands.ROM_START, 0, 0, 1));
+
+    const buffer = Buffer.alloc(256);
+    await writeToPort(port, buffer);
+
     console.log('Done uploading.');
-  } else {
-    console.error('Error uploading.');
-    process.exit(STATUS_ERROR);
+  } catch (e) {
+    port.close();
+    throw e;
   }
 }
 
@@ -202,24 +207,21 @@ async function findPortAndUpload(options) {
         console.error('Port Error: ', err.message);
       });
 
-      found = await writeToPort(port, prepareCommand(commands.TEST));
+      await writeToPort(port, prepareCommand(commands.TEST));
+      found = await test(port);
       if (found) {
         console.log('Found ED64 on', path);
 
-        fs.readFile(fileName, async function (err, contents) {
-          if (err) {
-            console.error('Error reading file: ', err.message);
-            process.exit(STATUS_ERROR);
-          }
+        const contents = fs.readFileSync(fileName);
 
-          await sendData(port, contents);
+        await sendData(port, contents);
 
-          if (keepAlive) {
-            startListening(port, options.port);
-          } else {
-            port.close();
-          }
-        });
+        if (keepAlive) {
+          startListening(port, options.port);
+        } else {
+          port.close();
+        }
+        break;
       }
     }
     if (!found) {
@@ -255,16 +257,24 @@ process.argv.forEach(function (val, index) {
   }
 
   if (options.fileName || !val) {
-    console.error('You must provide a single ROM file to read from');
-    process.exit(STATUS_BAD_PARAM);
-  }
-
-  if (!fs.existsSync(val) || fs.statSync(val).isDirectory()) {
-    console.error(`${val} does not exist or is a directory`);
+    console.error('You must provide only a single ROM file to read from');
     process.exit(STATUS_BAD_PARAM);
   }
 
   options.fileName = val;
 });
+
+if (!options.fileName) {
+  console.error('You must provide a ROM file');
+  process.exit(STATUS_BAD_PARAM);
+}
+
+if (
+  !fs.existsSync(options.fileName) ||
+  fs.statSync(options.fileName).isDirectory()
+) {
+  console.error(`${options.fileName} is not a ROM`);
+  process.exit(STATUS_BAD_PARAM);
+}
 
 findPortAndUpload(options);
