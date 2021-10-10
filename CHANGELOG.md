@@ -1,5 +1,19 @@
 # Change Log
 
+## [2.X.X] - 
+
+### Added
+
+- 
+
+### Changed
+
+- Update libdragon docker
+- Update dependencies
+
+### Fixed
+
+- 
 
 ## [2.0.3] - 2021-10-05
 

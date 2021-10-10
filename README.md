@@ -26,38 +26,39 @@ You can start listening for UNFLoader style text messages and pipe them to the s
 
 In the `./src` folder you can find a N64 program. To be able to use it;
 
-- Make sure you have node.js (>= 14) and docker installed on your machine.
+- Make sure you have node.js (`>= 14`) and docker (`>= 18`) installed on your machine.
 - Install vscode.
 - Run `npm install` on this repository's root.
-- `libdragon` toolchain will be installed automatically as a docker container (named ed64) on your computer.
+- `libdragon` toolchain will be installed automatically as a docker container on your computer.
 - Connect your Everdrive64 via USB and turn on your N64.
 - Open this folder with vscode and hit F5.
 - Voila! You have an executable with print debugging.
 
 When using `libdragon` all standard error will go serial over USB.
 
-### Creating a new libdragon project
+### Creating a new project
 
 Create a new NPM project;
 
     npm init
 
-install `ed64`;
+install `libdragon` and `ed64`;
 
+    npm i libdragon --save
     npm i ed64 --save
 
 Add following to your NPM scripts;
 
-    "prepare": "libdragon install"
+    "prepare": "libdragon init"
 
-This will install and initialize libdragon when you do `npm i` for your repository.
+This will install and initialize libdragon when you do `npm i` for your repository. Keep in mind that your vendored libdragon copy will need initialization. e.g `git submodule update --init` if you are using it as a submodule.
 
 To update libdragon, run;
 
     npm i libdragon@latest --save
     npm i
 
-The second `npm i` will actually download the docker container and prepare it, thanks to the `prepare` script.
+The second `npm i` will actually initialize the container if necessary, thanks to the `prepare` script.
 
 To invoke the locally installed loader;
 
