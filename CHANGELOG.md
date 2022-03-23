@@ -1,19 +1,11 @@
 # Change Log
 
-## [2.X.X] - 
-
-### Added
-
-- 
+## [2.0.4] - 2022-03-23
 
 ### Changed
 
 - Update libdragon docker
 - Update dependencies
-
-### Fixed
-
-- 
 
 ## [2.0.3] - 2021-10-05
 
@@ -62,7 +54,7 @@
 - Update libdragon to `9.0.0`
 - Update test Makefile
 - Remove ed64 library, root Makefile, reboot support, socket server and `read`
-command
+  command
 - Update readme to match
 
 ### Added
