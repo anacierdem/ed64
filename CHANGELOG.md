@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.0.5] - 2022-03-23
+
+### Changed
+
+- Update libdragon docker
+
 ## [2.0.4] - 2022-03-23
 
 ### Changed
