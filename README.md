@@ -68,6 +68,8 @@ To invoke the locally installed loader;
 
 - [x] Implement ROM loader.
 - [x] Implement UNFloader protocol on js and use UNFloader as the usblib thus adding extended cartridge support.
+- [ ] Start using semantic release.
+- [ ] Start using typescript via jsdoc comments.
 - [ ] Add screen capture & dump functionality.
 - [ ] Add a GDB stub for real-time debugging & hot replacement.
 - [ ] Implement direct SD card access via `libdragon` filesystem API.
