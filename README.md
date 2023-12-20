@@ -1,4 +1,10 @@
+# DEPRECATION NOTICE
+
+All of the existing tooling is implemented elsewhere and most of the functionality I was planning to have also mostly exist at this point, so there is no reason to fragment tooling.
+If you arrived on this repository, I suggest using [UNFLoader](https://github.com/buu342/N64-UNFLoader) instead. It supports almost all flashcarts in the wild and has many additional functionality. Other things are being implemented on libdragon itself. I will not be maintaining this repository anymore.
+
 # ED64 Tools
+
 
 [![Build](https://github.com/anacierdem/ed64/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/anacierdem/ed64/actions/workflows/ci.yml?branch=master)
 
